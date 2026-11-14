@@ -24,8 +24,8 @@ export default function DashboardGlobe({ parcels }: Props) {
 
       if (cancelled || !containerRef.current) return;
 
-      Cesium.Ion.defaultAccessToken =
-        process.env.NEXT_PUBLIC_CESIUM_ION_TOKEN ?? "";
+      const ionToken = process.env.NEXT_PUBLIC_CESIUM_ION_TOKEN;
+      if (ionToken) Cesium.Ion.defaultAccessToken = ionToken;
 
       const viewer = new Cesium.Viewer(containerRef.current, {
         animation: false,
@@ -54,11 +54,9 @@ export default function DashboardGlobe({ parcels }: Props) {
 
       viewer.camera.changed.addEventListener(() => {
         const cartographic = viewer.camera.positionCartographic;
-        const longitude = Cesium.Math.zeroToTwoPi(cartographic.longitude);
-        const minimum = Cesium.Math.zeroToTwoPi(minimumLongitude);
-        const maximum = Cesium.Math.zeroToTwoPi(maximumLongitude);
+        const longitude = Cesium.Math.negativePiToPi(cartographic.longitude);
 
-        if (longitude < minimum || longitude > maximum) {
+        if (longitude < minimumLongitude || longitude > maximumLongitude) {
           const clampedLongitude = Cesium.Math.clamp(
             Cesium.Math.negativePiToPi(cartographic.longitude),
             minimumLongitude,

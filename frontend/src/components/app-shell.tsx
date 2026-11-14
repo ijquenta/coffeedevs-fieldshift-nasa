@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, Home, Lightbulb, Menu, Package, Sprout, X } from "lucide-react";
+import { BookOpen, Home, Lightbulb, Menu, Package, Sprout, X, ChartNoAxesCombined } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { Navbar } from "./ui/navbar";
 import { Sheet, SheetContent } from "./ui/sheet";
@@ -11,6 +11,7 @@ const navigation = [
   { href: "/", label: "Inicio", icon: Home },
   { href: "/dashboard", label: "Dashboard", icon: Sprout },
   { href: "/recomendaciones", label: "Recomendaciones", icon: Lightbulb },
+  { href: "/predicciones", label: "Predicciones", icon: ChartNoAxesCombined },
   { href: "/productos", label: "Gestión de productos", icon: Package },
   { href: "/recursos", label: "Recursos", icon: BookOpen },
 ];
