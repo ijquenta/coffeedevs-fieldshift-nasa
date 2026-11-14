@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+:root { --forest: #102c22; --deep: #071b16; --green: #4f8b55; --lime: #b8dc91; --paper: #f5f6ee; --ink: #17352a; --muted: #718078; --line: #d9e1d5; --terra: #ba8059; }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: Arial, Helvetica, sans-serif; }
+a { color: inherit; text-decoration: none; }
+.agro-page { overflow: hidden; background: var(--paper); }
+.dashboard-shell { min-height: 100svh; }
+.dashboard-map { min-height: 100svh; }
+.dashboard-map .cesium-viewer,
+.dashboard-map .cesium-viewer-cesiumWidget,
+.dashboard-map .cesium-widget,
+.dashboard-map .cesium-widget canvas { width: 100% !important; height: 100% !important; }
+.dashboard-header { background: linear-gradient(180deg, rgba(3,9,24,.9), rgba(3,9,24,.35)); }
+.dashboard-filters { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.25) transparent; }
+.dashboard-stats { min-width: 390px; }
+@media (max-width: 700px) {
+  .dashboard-header { padding: 0 16px; }
+  .dashboard-header > div:last-child { display: none; }
+  .dashboard-filters { left: 12px; right: 12px; top: 72px; width: auto; max-height: 45vh; padding: 16px; }
+  .dashboard-filters h2 { margin-bottom: 18px; }
+  .dashboard-filters > div { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .dashboard-filters > div > div:first-child,
+  .dashboard-filters > div > div:last-child { grid-column: 1 / -1; }
+  .dashboard-stats { top: auto; right: 12px; bottom: 16px; left: 12px; width: auto; min-width: 0; }
+  .dashboard-map section > div:first-of-type { left: 12px; right: 12px; top: auto; bottom: 16px; max-width: none; }
+}
+.ui-button { display: inline-flex; align-items: center; justify-content: center; gap: 10px; border: 0; cursor: pointer; font: inherit; }
+.ui-card { border: 1px solid rgba(184,220,145,.22); }
+.ui-card-header { display: flex; align-items: center; justify-content: space-between; }
+.ui-card-content { padding: 0; }
+.ui-badge { display: inline-flex; align-items: center; }
+.agro-container { width: min(1120px, calc(100% - 64px)); margin: 0 auto; }
+.agro-header { position: absolute; z-index: 5; top: 0; left: 0; display: flex; width: 100%; height: 80px; align-items: center; justify-content: space-between; padding: 0 36px; color: white; border-bottom: 1px solid rgba(255,255,255,.18); }
+.agro-logo { display: inline-flex; align-items: center; gap: 9px; font-size: 20px; font-weight: 700; letter-spacing: -1px; }
+.agro-logo > span:last-child > span { color: var(--lime); }
+.agro-logo-mark { display: grid; width: 28px; height: 28px; place-items: center; color: var(--forest); background: var(--lime); border-radius: 50% 50% 50% 8px; transform: rotate(-20deg); }.agro-logo-mark svg { transform: rotate(20deg); }
+.agro-nav { display: flex; gap: 28px; margin-left: auto; margin-right: 38px; color: rgba(255,255,255,.7); font-size: 12px; }.agro-nav a:hover { color: white; }
+.agro-header-actions { display: flex; align-items: center; gap: 24px; }.agro-event { color: rgba(255,255,255,.65); font: 9px 'Courier New', monospace; letter-spacing: .05em; }.agro-event span,.agro-hero-note:before { display: inline-block; width: 6px; height: 6px; margin-right: 7px; background: var(--lime); border-radius: 50%; }
+.agro-header-cta { display: flex; align-items: center; gap: 8px; color: var(--lime); font-size: 12px; }.agro-menu { display: none; color: white; border: 0; background: transparent; }
+.agro-hero { position: relative; min-height: 690px; color: white; background: var(--deep); }.agro-hero-image { position: absolute; inset: 0; background: url("https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=2200&q=85") center/cover; }.agro-hero-shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(5,24,18,.96) 0%, rgba(5,24,18,.78) 42%, rgba(5,24,18,.18) 100%), linear-gradient(0deg, rgba(5,24,18,.75), transparent 45%); }.agro-hero-content { position: relative; z-index: 1; display: flex; width: min(1120px, calc(100% - 64px)); min-height: 620px; margin: 0 auto; flex-direction: column; justify-content: center; padding-top: 70px; }.agro-hero-copy { max-width: 570px; }.agro-kicker { display: flex; align-items: center; gap: 11px; color: var(--lime); font: 10px 'Courier New', monospace; letter-spacing: .13em; text-transform: uppercase; }.agro-kicker > span { width: 28px; height: 1px; background: currentColor; }.agro-kicker-dark { color: var(--green); }.agro-hero h1 { margin: 20px 0; font-size: clamp(48px, 7vw, 82px); line-height: .94; letter-spacing: -4px; }.agro-hero h1 em,.agro-section-heading h2 em,.agro-intro h2 em,.agro-offline h2 em,.agro-final h2 em { color: var(--lime); font-style: normal; }.agro-hero-text { max-width: 430px; color: rgba(255,255,255,.75); font-size: 16px; line-height: 1.65; }.agro-actions { display: flex; align-items: center; gap: 25px; margin-top: 30px; }.agro-button { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 14px 19px; font-size: 12px; font-weight: 600; transition: transform .2s, background .2s; }.agro-button:hover { transform: translateY(-2px); }.agro-button-primary { color: var(--forest); background: var(--lime); }.agro-button-primary:hover { background: #d0e9ad; }.agro-button-light { color: var(--forest); background: white; }.agro-text-link { color: rgba(255,255,255,.75); font-size: 12px; }.agro-text-link span { margin-left: 8px; color: var(--lime); }.agro-hero-note { display: flex; align-items: center; gap: 11px; margin-top: 56px; color: var(--lime); font-size: 11px; line-height: 1.5; }.agro-hero-note strong { color: white; font-weight: 500; }.agro-hero-bottom { position: absolute; z-index: 1; right: 36px; bottom: 25px; left: 36px; display: flex; justify-content: space-between; color: rgba(255,255,255,.55); font: 9px 'Courier New', monospace; letter-spacing: .1em; }
+.agro-intro { padding: 105px 0; background: var(--paper); }.agro-intro-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 100px; }.agro-intro h2,.agro-section-heading h2,.agro-offline h2 { margin: 17px 0 0; font-size: clamp(34px, 4vw, 53px); line-height: 1.02; letter-spacing: -2.5px; }.agro-intro h2 em { color: var(--green); }.agro-lead { max-width: 440px; margin: 33px 0 18px; color: var(--ink); font-size: 20px; line-height: 1.45; }.agro-muted,.agro-section-heading > p { max-width: 330px; color: var(--muted); font-size: 13px; line-height: 1.65; }
+.agro-benefits { padding: 105px 0 112px; color: white; background: var(--forest); }.agro-section-heading { display: flex; align-items: end; justify-content: space-between; gap: 45px; margin-bottom: 51px; }.agro-section-heading h2 em { color: var(--lime); }.agro-heading-light > p { color: rgba(255,255,255,.55); }.agro-benefit-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 13px; }.agro-benefit-card { position: relative; min-height: 245px; padding: 21px; border: 1px solid rgba(184,220,145,.22); background: rgba(255,255,255,.03); }.agro-benefit-top { display: flex; justify-content: space-between; color: var(--lime); }.agro-benefit-top span { color: rgba(255,255,255,.4); font: 10px 'Courier New', monospace; }.agro-benefit-card h3 { margin: 50px 0 10px; font-size: 17px; }.agro-benefit-card p { max-width: 220px; margin: 0; color: rgba(255,255,255,.55); font-size: 12px; line-height: 1.6; }.agro-card-arrow { position: absolute; right: 21px; bottom: 21px; color: var(--lime); }
+.agro-process { padding: 105px 0 115px; color: white; background: #1c4935; }.agro-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; }.agro-steps > div { padding: 0 30px 0 0; border-top: 1px solid rgba(184,220,145,.4); }.agro-steps > div + div { padding-left: 25px; border-left: 1px solid rgba(184,220,145,.25); }.agro-steps span { display: block; margin: 17px 0 37px; color: var(--lime); font: 10px 'Courier New', monospace; }.agro-steps strong { display: block; font-size: 15px; }.agro-steps p { max-width: 190px; color: rgba(255,255,255,.55); font-size: 12px; line-height: 1.55; }
+.agro-offline { padding: 95px 0; background: #dfe8d9; }.agro-offline-grid { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 80px; }.agro-offline-copy h2 em { color: var(--green); }.agro-offline-copy > p:not(.agro-kicker) { max-width: 420px; margin: 25px 0; color: #5e7065; font-size: 14px; line-height: 1.65; }.agro-offline-note { display: flex; align-items: center; gap: 11px; margin: 26px 0 28px; color: var(--green); font-size: 11px; }.agro-offline-note span { color: var(--muted); line-height: 1.5; }.agro-offline-note strong { color: var(--ink); font-weight: 600; }.agro-offline-visual { display: flex; min-height: 350px; align-items: center; justify-content: center; }.agro-data-card { width: 285px; padding: 21px; transform: rotate(-4deg); color: var(--ink); background: #f7faf2; box-shadow: 20px 22px 0 rgba(37,81,53,.14); }.agro-data-card > div:first-child span,.agro-data-value small { display: block; color: #7c8e82; font: 9px 'Courier New', monospace; letter-spacing: .08em; }.agro-data-card > div:first-child strong { display: block; margin-top: 6px; font-size: 18px; }.agro-data-value { margin-top: 31px; color: var(--green); font-size: 43px; font-weight: 700; }.agro-data-value small { margin-top: -4px; color: var(--muted); font-size: 9px; font-weight: 400; letter-spacing: 0; }.agro-chart { display: flex; height: 75px; align-items: end; gap: 8px; margin: 17px 0; padding: 10px; background: #e4efdf; }.agro-chart i { flex: 1; background: var(--green); }.agro-chart i:nth-child(1) { height: 31%; }.agro-chart i:nth-child(2) { height: 48%; }.agro-chart i:nth-child(3) { height: 43%; }.agro-chart i:nth-child(4) { height: 68%; }.agro-chart i:nth-child(5) { height: 52%; }.agro-chart i:nth-child(6) { height: 78%; }.agro-chart i:nth-child(7) { height: 90%; }.agro-data-footer { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding-top: 14px; border-top: 1px solid var(--line); }.agro-data-footer span { display: grid; grid-template-columns: 18px 1fr; color: var(--muted); font-size: 9px; }.agro-data-footer svg { grid-row: span 2; color: var(--green); }.agro-data-footer strong { color: var(--ink); font-size: 11px; }
+.agro-final { padding: 110px 0 120px; color: white; background: var(--deep); text-align: center; }.agro-final .agro-kicker { justify-content: center; }.agro-final h2 { margin: 20px 0 17px; font-size: clamp(40px, 5vw, 65px); line-height: 1; letter-spacing: -3px; }.agro-final p:not(.agro-kicker) { max-width: 390px; margin: 0 auto 28px; color: rgba(255,255,255,.58); font-size: 13px; line-height: 1.6; }.agro-footer { padding: 56px 0 24px; color: rgba(255,255,255,.65); background: #061710; }.agro-footer-main { display: flex; justify-content: space-between; padding-bottom: 55px; }.agro-footer .agro-logo { color: white; }.agro-footer-main p { margin: 17px 0 0; color: rgba(255,255,255,.4); font-size: 11px; line-height: 1.5; }.agro-footer-links { display: flex; gap: 85px; }.agro-footer-links div { display: grid; gap: 10px; font-size: 11px; }.agro-footer-links span { margin-bottom: 5px; color: var(--lime); font: 9px 'Courier New', monospace; text-transform: uppercase; }.agro-footer-links a:hover { color: var(--lime); }.agro-footer-bottom { display: flex; justify-content: space-between; padding-top: 19px; border-top: 1px solid rgba(255,255,255,.12); color: rgba(255,255,255,.35); font: 9px 'Courier New', monospace; }.agro-footer-bottom span:last-child { display: inline-flex; align-items: center; gap: 6px; }
+@media (max-width: 800px) { .agro-header { padding: 0 20px; }.agro-nav,.agro-header-actions { display: none; }.agro-menu { display: block; }.agro-container,.agro-hero-content { width: min(100% - 40px, 620px); }.agro-hero { min-height: 650px; }.agro-hero-content { min-height: 590px; }.agro-hero h1 { font-size: clamp(47px, 13vw, 72px); }.agro-intro-grid,.agro-offline-grid { grid-template-columns: 1fr; gap: 35px; }.agro-intro,.agro-benefits,.agro-process { padding: 80px 0; }.agro-section-heading { display: block; }.agro-section-heading > p { margin-top: 22px; }.agro-benefit-grid { grid-template-columns: 1fr; }.agro-benefit-card { min-height: 195px; }.agro-steps { gap: 32px; grid-template-columns: 1fr; }.agro-steps > div,.agro-steps > div + div { padding: 0; border: 0; border-top: 1px solid rgba(184,220,145,.4); }.agro-steps span { margin-bottom: 18px; }.agro-offline-grid { gap: 20px; }.agro-offline-visual { order: 2; min-height: 330px; }.agro-footer-main { display: block; }.agro-footer-links { margin-top: 40px; gap: 55px; }.agro-footer-bottom { display: grid; gap: 10px; } }
+@media (max-width: 480px) { .agro-actions { align-items: flex-start; flex-direction: column; gap: 18px; }.agro-hero-bottom { right: 20px; bottom: 20px; left: 20px; }.agro-hero-bottom span:last-child { display: none; }.agro-data-card { width: 270px; }.agro-final { padding: 80px 0 90px; } }
+
+/* Contenedor principal de Cesium */
+.cesium-dashboard-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: #030918;
+}
+
+/* Visor de Cesium */
+.cesium-dashboard-container .cesium-viewer,
+.cesium-dashboard-container .cesium-viewer-cesiumWidget,
+.cesium-dashboard-container .cesium-widget {
+  width: 100%;
+  height: 100%;
+}
+
+/* Canvas WebGL */
+.cesium-dashboard-container .cesium-widget canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
