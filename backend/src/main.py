@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -5,6 +7,8 @@ from src.controllers.power_controller import router as power_router
 from src.controllers.ine_controller import router as ine_router
 from src.controllers import api_router
 from src.core.config import get_settings
+from src.services.power_client import PowerClient
+from src.services.power_service import PowerService
 from src.domain.exceptions import (
     AIProviderError,
     FieldNotFoundError,
@@ -13,6 +17,17 @@ from src.domain.exceptions import (
 )
 
 settings = get_settings()
+
+
+@asynccontextmanager
+async def lifespan(application: FastAPI):
+    power_client = PowerClient(settings)
+    application.state.power_service = PowerService(power_client, settings)
+    try:
+        yield
+    finally:
+        await power_client.aclose()
+
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -23,6 +38,7 @@ app = FastAPI(
     ),
     docs_url="/docs",
     redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
