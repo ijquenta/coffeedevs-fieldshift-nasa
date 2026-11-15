@@ -7,8 +7,19 @@ from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
 from src.core.dependencies import get_ai_provider
+from src.controllers.power_controller import (
+    get_reverse_geocoding_service,
+)
+from src.controllers.soil_controller import get_service as get_soil_service
 from src.main import app
 from src.schemas.power import PolygonRecommendationRequest, PolygonResponse
+from src.schemas.soil import (
+    ParameterMeta,
+    ParameterSummary,
+    SoilPolygonRequest,
+    SoilPolygonResponse,
+)
+from src.services.reverse_geocoding_service import ReverseGeocodedLocation
 
 
 class FakePowerService:
@@ -29,6 +40,44 @@ class FakePowerService:
             parameters={"T2M": {"units": "C"}},
             aggregated={"T2M": {"20240101": 12.5}},
             summary={"T2M": {"min": 12.5, "max": 12.5, "mean": 12.5, "count": 1}},
+        )
+
+
+class FakeSoilService:
+    def __init__(self) -> None:
+        self.request: SoilPolygonRequest | None = None
+
+    async def polygon(self, request: SoilPolygonRequest) -> SoilPolygonResponse:
+        self.request = request
+        return SoilPolygonResponse(
+            query={
+                "temporal": request.temporal,
+                "start": request.start,
+                "end": request.end,
+                "parameters": ["sm_rootzone"],
+            },
+            points_requested=1,
+            points_ok=1,
+            parameters={
+                "sm_rootzone": ParameterMeta(
+                    units="m3/m3", longname="Root Zone Soil Moisture"
+                )
+            },
+            aggregated={"sm_rootzone": {"20240101": 0.21}},
+            summary={
+                "sm_rootzone": ParameterSummary(
+                    min=0.21, max=0.21, mean=0.21, count=1
+                )
+            },
+        )
+
+
+class FakeReverseGeocodingService:
+    async def reverse(self, _latitude: float, _longitude: float) -> ReverseGeocodedLocation:
+        return ReverseGeocodedLocation(
+            municipality_name="Municipio de prueba",
+            department_name="La Paz",
+            country_code="bo",
         )
 
 
@@ -67,6 +116,11 @@ class TestPolygonRecommendationEndpoint(unittest.TestCase):
         self.original_power_service = getattr(app.state, "power_service", None)
         self.power_service = FakePowerService()
         app.state.power_service = self.power_service
+        self.soil_service = FakeSoilService()
+        app.dependency_overrides[get_soil_service] = lambda: self.soil_service
+        app.dependency_overrides[get_reverse_geocoding_service] = (
+            FakeReverseGeocodingService
+        )
         self.ai_provider = FakeAIProvider()
         app.dependency_overrides[get_ai_provider] = lambda: self.ai_provider
         self.client = TestClient(app)
@@ -107,6 +161,18 @@ class TestPolygonRecommendationEndpoint(unittest.TestCase):
         self.assertEqual(self.ai_provider.message["period"]["resolution"], "daily")
         self.assertEqual(self.ai_provider.message["period"]["start"], "2024-01-01")
         self.assertEqual(self.ai_provider.message["nasa_power"]["aggregated"]["T2M"]["20240101"], 12.5)
+        self.assertEqual(response.json()["soil"]["aggregated"]["sm_rootzone"]["20240101"], 0.21)
+        self.assertEqual(self.soil_service.request.temporal, "daily")
+        self.assertEqual(self.soil_service.request.presets, ["soil"])
+        self.assertEqual(self.soil_service.request.start, "2024-01-01")
+        self.assertEqual(self.soil_service.request.end, "2024-01-02")
+        self.assertEqual(
+            self.soil_service.request.geometry.coordinates,
+            self.power_service.request.geometry.coordinates,
+        )
+        self.assertEqual(self.soil_service.request.grid_step, 0.5)
+        self.assertFalse(self.soil_service.request.include_points)
+        self.assertEqual(self.ai_provider.message["soil"]["aggregated"]["sm_rootzone"]["20240101"], 0.21)
         self.assertEqual(self.ai_provider.message["polygon_request"]["geometry"]["type"], "Polygon")
         self.assertEqual(self.ai_provider.message["priorities"], "priorizar ahorro de agua")
         self.assertEqual(self.ai_provider.message["location"]["municipality_name"], "Municipio de prueba")
@@ -162,6 +228,25 @@ class TestPolygonRecommendationEndpoint(unittest.TestCase):
         self.assertEqual(self.ai_provider.message["polygon_request"]["parameters"], ["T2M"])
         self.assertEqual(self.ai_provider.message["polygon_request"]["presets"], ["precipitation"])
         self.assertIn("nasa_power", self.ai_provider.message)
+
+    def test_hourly_climate_query_uses_daily_soil_resolution(self) -> None:
+        payload = {
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [[[-68.2, -16.5], [-68.1, -16.5], [-68.1, -16.4], [-68.2, -16.5]]],
+            },
+            "temporal": "hourly",
+            "start": "2024-01-01",
+            "end": "2024-01-02",
+            "parameters": ["T2M"],
+            "plants": ["papa"],
+        }
+
+        response = self.client.post("/api/power/polygon/recommendation", json=payload)
+
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(self.ai_provider.message["period"]["resolution"], "hourly")
+        self.assertEqual(self.soil_service.request.temporal, "daily")
 
     def test_invalid_gemini_output_returns_explicit_error(self) -> None:
         self.ai_provider.response_text = "No es el JSON solicitado"

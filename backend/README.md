@@ -119,7 +119,7 @@ python -m unittest tests/test_chat_module.py
 
 | Método | Endpoint | Descripción |
 |---|---|---|
-| `POST` | `/api/power/polygon/recommendation` | Consulta NASA POWER y devuelve `recommendation` (Markdown detallado) y `audio_summary` (resumen sencillo para voz) |
+| `POST` | `/api/power/polygon/recommendation` | Consulta NASA POWER y suelo, y devuelve ambos resultados junto con `recommendation` (Markdown detallado) y `audio_summary` |
 | `GET` | `/api/v1/ine/la-paz/municipios/nombre/{nombre_municipio}` | Obtiene el detalle de un municipio de La Paz por nombre |
 | `GET` | `/api/v1/ine/la-paz/cultivos` | Lista todos los cultivos registrados y los municipios asociados |
 | `GET` | `/api/v1/ine/la-paz/cultivos/{cultivo}` | Obtiene un cultivo y los municipios asociados |
