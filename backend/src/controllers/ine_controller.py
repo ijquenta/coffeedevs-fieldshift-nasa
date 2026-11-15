@@ -34,6 +34,33 @@ async def municipio(municipio_id: str, svc: INEService = Depends(get_service)):
     return result
 
 
+@router.get(
+    "/municipios/nombre/{nombre_municipio}",
+    response_model=MunicipioDetalleResponse,
+    summary="Obtener municipio por nombre",
+)
+async def municipio_por_nombre(
+    nombre_municipio: str,
+    svc: INEService = Depends(get_service),
+):
+    result = svc.get_municipio(nombre_municipio)
+    if result is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No se encontró el municipio '{nombre_municipio}' en La Paz",
+        )
+    return result
+
+
+@router.get(
+    "/cultivos",
+    response_model=list[CultivoMunicipiosResponse],
+    summary="Listar cultivos registrados por municipio",
+)
+async def cultivos(svc: INEService = Depends(get_service)):
+    return svc.list_cultivos_municipios()
+
+
 @router.get("/cultivos/{cultivo}", response_model=CultivoMunicipiosResponse)
 async def cultivo(cultivo: str, svc: INEService = Depends(get_service)):
     result = svc.get_cultivo_municipios(cultivo)

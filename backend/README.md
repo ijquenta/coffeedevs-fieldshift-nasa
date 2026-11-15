@@ -120,9 +120,14 @@ python -m unittest tests/test_chat_module.py
 | Método | Endpoint | Descripción |
 |---|---|---|
 | `POST` | `/api/power/polygon/recommendation` | Consulta NASA POWER y devuelve `recommendation` (Markdown detallado) y `audio_summary` (resumen sencillo para voz) |
+| `GET` | `/api/v1/ine/la-paz/municipios/nombre/{nombre_municipio}` | Obtiene el detalle de un municipio de La Paz por nombre |
+| `GET` | `/api/v1/ine/la-paz/cultivos` | Lista todos los cultivos registrados y los municipios asociados |
+| `GET` | `/api/v1/ine/la-paz/cultivos/{cultivo}` | Obtiene un cultivo y los municipios asociados |
 | `POST` | `/api/v1/chat/message` | Envía mensaje al copiloto (crea o continúa hilo) |
 | `GET` | `/api/v1/chat/{session_id}/history` | Obtiene el historial completo de la conversación |
 | `DELETE` | `/api/v1/chat/{session_id}` | Cierra y elimina la sesión activa de memoria |
 | `GET` | `/health` | Chequeo de salud del servicio |
 
 El endpoint de recomendación recibe los mismos campos que `/api/power/polygon`, además de `plants` (obligatorio), `priorities`, `municipality_id`, `municipality_name`, `crop_requirements` y `current_crop` (opcionales). Solo admite resolución `daily` u `hourly`. El prompt de Gemini se carga desde `docs/prompt.md`.
+
+La búsqueda municipal por nombre no distingue mayúsculas ni tildes. Codifica los espacios y caracteres especiales en la URL; por ejemplo: `GET /api/v1/ine/la-paz/municipios/nombre/Nuestra%20Se%C3%B1ora%20de%20La%20Paz`. Devuelve el mismo objeto que la búsqueda por ID o `404` si no existe.
