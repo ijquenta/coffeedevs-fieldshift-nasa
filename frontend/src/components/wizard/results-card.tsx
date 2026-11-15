@@ -8,8 +8,45 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 const confidenceText = { alta: "Buena señal", media: "Señal parcial", baja: "Pocos datos" };
+function leerFilaTabla(value: string, columnas: number) {
+  if (!value.startsWith("|")) return null;
+  let cierre = 0;
+  for (let columna = 0; columna < columnas; columna += 1) {
+    cierre = value.indexOf("|", cierre + 1);
+    if (cierre < 0) return null;
+  }
+  return { fila: value.slice(0, cierre + 1).trim(), resto: value.slice(cierre + 1) };
+}
+function normalizarTablasMarkdown(value: string) {
+  return value.split("\n").map((line) => {
+    const separador = line.match(/\|(?:\s*:?-{3,}:?\s*\|)+/);
+    if (!separador || separador.index === undefined) return line;
+    const columnas = separador[0].split("|").length - 2;
+    const antes = line.slice(0, separador.index);
+    const posiciones = [...antes.matchAll(/\|/g)].map((match) => match.index ?? -1);
+    const inicioCabecera = posiciones[posiciones.length - columnas - 1];
+    if (inicioCabecera === undefined || columnas < 1) return line;
+    const finCabecera = posiciones[posiciones.length - 1] + 1;
+    const cabecera = antes.slice(inicioCabecera, finCabecera).trim();
+    if (cabecera.split("|").length - 2 !== columnas) return line;
+
+    const filas = [cabecera, separador[0].trim()];
+    let resto = line.slice(separador.index + separador[0].length).trimStart();
+    while (resto.startsWith("|")) {
+      const resultado = leerFilaTabla(resto, columnas);
+      if (!resultado) return line;
+      filas.push(resultado.fila);
+      resto = resultado.resto.trimStart();
+    }
+
+    const prefijo = antes.slice(0, inicioCabecera).trimEnd();
+    const sufijo = resto.trim();
+    return `${prefijo ? `${prefijo}\n\n` : ""}${filas.join("\n")}${sufijo ? `\n\n${sufijo}` : ""}`;
+  }).join("\n");
+}
 function normalizarMarkdown(value: string) {
-  return value.replace(/\\n/g, "\n").replace(/\s*(\*\*[A-E]\.\s)/g, "\n\n$1").trim();
+  const markdown = value.replace(/\\n/g, "\n").replace(/\s*(\*\*[A-E]\.\s)/g, "\n\n$1").trim();
+  return normalizarTablasMarkdown(markdown);
 }
 const markdownComponents = {
   p: ({ children }: { children?: ReactNode }) => <p className="mb-3 leading-relaxed text-slate-300">{children}</p>,

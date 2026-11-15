@@ -187,6 +187,8 @@ Estructura fija, en Markdown:
 
 **B. Comparación** (una fila por planta). Usa términos comprensibles en los encabezados y aclara las siglas antes o después de la tabla:
 
+La tabla debe ser Markdown GFM válido: deja una línea en blanco antes y después, escribe la cabecera, el separador y cada fila en líneas distintas usando saltos de línea reales. No unas filas con espacios ni entregues la tabla en un solo renglón.
+
 | Planta | Compatibilidad ambiental (temperatura / lluvia / humedad / altitud / luz) | Rotación | Prioridades | Recomendación general | Resultado |
 |---|---|---|---|---|---|
 
