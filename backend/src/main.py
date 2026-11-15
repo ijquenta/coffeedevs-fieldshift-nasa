@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from src.controllers.power_controller import router as power_router
+from src.controllers.ine_controller import router as ine_router
 from src.core.config import get_settings
 from src.core.exceptions import PowerAPIError
 from src.services.power_client import PowerClient
@@ -42,3 +43,4 @@ async def health():
 
 
 app.include_router(power_router)
+app.include_router(ine_router)
