@@ -1,16 +1,18 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from src.controllers.ine_controller import get_service as get_ine_service
+from src.controllers.soil_controller import get_service as get_soil_service
+from src.core.exceptions import PowerAPIError
 from src.core.dependencies import get_ai_provider
 from src.interfaces.ai_chat_provider import ChatProvider
 from src.schemas.power import (
     PointRequest,
     PointResponse,
     PolygonRecommendationRequest,
-    PolygonRecommendationResponse,
     PolygonRequest,
     PolygonResponse,
 )
+from src.schemas.recommendation import PolygonRecommendationResponse
 from src.services.ine_service import INEService
 from src.services.polygon_recommendation_service import PolygonRecommendationService
 from src.services.power_service import PowerService
@@ -18,6 +20,7 @@ from src.services.reverse_geocoding_service import (
     ReverseGeocodingError,
     ReverseGeocodingService,
 )
+from src.services.soil_service import SoilService
 
 router = APIRouter(prefix="/api/power", tags=["NASA POWER"])
 
@@ -59,6 +62,7 @@ async def polygon_recommendation(
     svc: PowerService = Depends(get_service),
     chat_provider: ChatProvider = Depends(get_ai_provider),
     ine_service: INEService = Depends(get_ine_service),
+    soil_service: SoilService = Depends(get_soil_service),
     reverse_geocoding: ReverseGeocodingService = Depends(get_reverse_geocoding_service),
 ):
     municipality = None
@@ -93,7 +97,15 @@ async def polygon_recommendation(
                 status_code=404,
                 detail=f"No se encontró el municipio '{req.municipality_id}' en La Paz",
             )
-    recommendation_service = PolygonRecommendationService(svc, chat_provider)
+    recommendation_service = PolygonRecommendationService(
+        svc, soil_service, chat_provider
+    )
     if municipality is not None and department_name is None:
         department_name = "La Paz"
-    return await recommendation_service.recommend(req, municipality, department_name)
+    try:
+        return await recommendation_service.recommend(
+            req, municipality, department_name
+        )
+    except PowerAPIError as exc:
+        status = exc.status_code if exc.status_code in (422, 429, 502, 504) else 502
+        raise HTTPException(status_code=status, detail=exc.detail) from exc

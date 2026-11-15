@@ -69,7 +69,9 @@ POST /api/power/polygon/recommendation
 Content-Type: application/json
 ```
 
-El endpoint consulta primero NASA POWER para el polígono enviado, usando la misma operación que `POST /api/power/polygon`. Después envía a Gemini un JSON con la solicitud, los datos obtenidos, los cultivos a evaluar y las prioridades indicadas.
+El endpoint consulta NASA POWER para el polígono enviado, usando la misma operación que `POST /api/power/polygon`, e integra esa consulta con el resultado del servicio de suelo. Cuando ambas consultas terminan, envía a Gemini un JSON con la solicitud, los datos obtenidos, los cultivos a evaluar y las prioridades indicadas.
+
+También consulta automáticamente el servicio de `POST /api/soil/polygon` con el mismo polígono, rango de fechas, `grid_step` e `include_points`, usando `presets: ["soil"]`. La consulta se hace mediante el servicio interno (sin una llamada HTTP al mismo backend). Los datos de suelo se incluyen en el contexto de Gemini y en el campo `soil` de la respuesta. Como el servicio de suelo admite `daily`/`monthly`, la recomendación siempre consulta suelo en resolución diaria, incluso si el clima se solicita como `hourly`. Si la consulta de suelo falla por completo, el endpoint devuelve un error explícito en lugar de producir una recomendación que parezca incluir datos de suelo.
 
 Gemini usa como instrucción el archivo [`prompt.md`](./prompt.md). La recomendación es una respuesta puntual: este endpoint no crea ni devuelve un `session_id` y no mantiene historial de conversación.
 
@@ -133,11 +135,12 @@ La ubicación enviada al modelo contiene la geometría, los datos municipales re
 
 ## Respuesta
 
-La respuesta tiene dos propiedades principales:
+La respuesta contiene cuatro propiedades principales:
 
 | Campo | Contenido |
 |---|---|
 | `polygon` | Respuesta de NASA POWER producida por la consulta de polígono. Incluye la consulta ejecutada, cantidad de puntos, parámetros, series agregadas, resumen estadístico, puntos individuales opcionales y errores parciales. |
+| `soil` | Respuesta de `POST /api/soil/polygon`: consulta, parámetros de suelo, series agregadas, resumen estadístico, puntos individuales opcionales y errores parciales. |
 | `recommendation` | Texto detallado de Gemini en Markdown, con la comparación de todas las plantas solicitadas, porcentajes justificables, motivos, acciones y alternativas disponibles. Está pensado para renderizarse en el frontend. |
 | `audio_summary` | Resumen independiente en español sencillo, de 3 a 6 frases, sin tablas ni formato Markdown. Está pensado para enviarse a texto-a-voz; no agrega datos distintos de la evaluación detallada. |
 
@@ -150,6 +153,8 @@ Estructura resumida de `polygon`:
 - `summary`: mínimo, máximo, media y cantidad de valores disponibles por parámetro.
 - `points`: series individuales solo si `include_points` fue `true`; en caso contrario es `null`.
 - `errors`: fallos de puntos individuales que no impidieron completar la agregación.
+
+`soil` usa la misma estructura de agregación que el endpoint de suelo: `query`, `points_requested`, `points_ok`, `parameters`, `aggregated`, `summary`, `points` y `errors`. En `query.temporal` se indica que el resultado de suelo es diario; los valores conservan las unidades declaradas en `parameters`.
 
 Ejemplo de forma de respuesta (valores ilustrativos, no son datos reales):
 
@@ -178,6 +183,82 @@ Ejemplo de forma de respuesta (valores ilustrativos, no son datos reales):
         "min": 12.5,
         "max": 13.1,
         "mean": 12.8,
+        "count": 2
+      }
+    },
+    "points": null,
+    "errors": []
+  },
+  "soil": {
+    "query": {
+      "temporal": "daily",
+      "start": "2024-01-01",
+      "end": "2024-01-02",
+      "community": "ag+open-meteo",
+      "parameters": ["sm_surface", "sm_rootzone", "soil_temp", "sm_profile"],
+      "grid_step": 0.5
+    },
+    "points_requested": 4,
+    "points_ok": 4,
+    "parameters": {
+      "sm_surface": {
+        "units": "m3/m3",
+        "longname": "Surface Soil Moisture (0-5 cm)"
+      },
+      "sm_rootzone": {
+        "units": "m3/m3",
+        "longname": "Root Zone Soil Moisture (0-100 cm)"
+      },
+      "soil_temp": {
+        "units": "C",
+        "longname": "Soil Temperature (0-7 cm)"
+      },
+      "sm_profile": {
+        "units": "%",
+        "longname": "Profile Soil Moisture Wetness"
+      }
+    },
+    "aggregated": {
+      "sm_surface": {
+        "20240101": 0.18,
+        "20240102": 0.19
+      },
+      "sm_rootzone": {
+        "20240101": 0.21,
+        "20240102": 0.23
+      },
+      "soil_temp": {
+        "20240101": 11.2,
+        "20240102": 11.6
+      },
+      "sm_profile": {
+        "20240101": 35.0,
+        "20240102": 36.0
+      }
+    },
+    "summary": {
+      "sm_surface": {
+        "min": 0.18,
+        "max": 0.19,
+        "mean": 0.185,
+        "count": 2
+      },
+      "sm_rootzone": {
+        "min": 0.21,
+        "max": 0.23,
+        "mean": 0.22,
+        "count": 2
+      },
+      "soil_temp": {
+        "min": 11.2,
+        "max": 11.6,
+        "mean": 11.4,
+        "count": 2
+      },
+      "sm_profile": {
+        "min": 35.0,
+        "max": 36.0,
+        "mean": 35.5,
         "count": 2
       }
     },
