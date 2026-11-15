@@ -8,6 +8,7 @@ from src.schemas.ine import (
     CampanaCultivoResponse,
     CampanaDetalle,
     CultivoResumenItem,
+    CultivoMunicipiosResponse,
     MunicipioDetalleResponse,
     MunicipioLaPaz,
 )
@@ -56,6 +57,7 @@ class INEService:
         self,
         piso_ecologico: str | None = None,
         solo_altiplano_valles: bool = False,
+        cultivo: str | None = None,
     ) -> list[MunicipioLaPaz]:
         result: list[MunicipioLaPaz] = []
         for item in _load_municipios_data()["municipios"]:
@@ -64,6 +66,14 @@ class INEService:
                 continue
             if piso_ecologico and _normalizar(piso_ecologico) not in _normalizar(piso):
                 continue
+            if cultivo:
+                cultivo_query = _normalizar(cultivo)
+                tiene_cultivo = any(
+                    cultivo_query in _normalizar(nombre)
+                    for nombre in item.get("cultivos_principales", [])
+                )
+                if not tiene_cultivo:
+                    continue
             result.append(MunicipioLaPaz.model_validate(item))
         return result
 
@@ -97,6 +107,40 @@ class INEService:
                 continue
             details.append(self._cultivo_resumen(crop_name, crop_data))
         return MunicipioDetalleResponse(**municipality, cultivos_detalle=details)
+
+    def list_cultivos_municipios(self) -> list[CultivoMunicipiosResponse]:
+        grouped: dict[str, list[str]] = {}
+        display_names: dict[str, str] = {}
+        for municipality in _load_municipios_data()["municipios"]:
+            for crop in municipality.get("cultivos_principales", []):
+                normalized = _normalizar(crop)
+                display_names.setdefault(normalized, crop)
+                grouped.setdefault(normalized, []).append(municipality["nombre"])
+        return [
+            CultivoMunicipiosResponse(
+                id=index,
+                nombre=display_names[key],
+                municipios=grouped[key],
+            )
+            for index, key in enumerate(grouped, start=1)
+        ]
+
+    def get_cultivo_municipios(self, cultivo: str) -> CultivoMunicipiosResponse | None:
+        query = _normalizar(cultivo)
+        items = self.list_cultivos_municipios()
+        for item in items:
+            if item.nombre == cultivo or _normalizar(item.nombre) == query:
+                return item
+        aliases = {"maiz": "maiz en grano", "haba": "haba verde", "cebada": "cebada en grano"}
+        alias = aliases.get(query)
+        if alias:
+            for item in items:
+                if _normalizar(item.nombre) == alias:
+                    return item
+        for item in items:
+            if query and query in _normalizar(item.nombre):
+                return item
+        return None
 
     @staticmethod
     def _cultivo_resumen(name: str, data: dict[str, Any]) -> CultivoResumenItem:
