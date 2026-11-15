@@ -5,7 +5,19 @@ import { CloudRain, Droplets, Leaf, Thermometer, Waves } from "lucide-react";
 import type { Position } from "../../types/wizard";
 import type { MapMode } from "./wizard-store";
 
-interface Props { points: Position[]; mode: MapMode; cameraTarget: { position: Position; altitude?: number; key: string } | null; spin: boolean; onChange: (points: Position[]) => void; onCameraMove?: (moving: boolean) => void }
+export type WeatherScenario = "none" | "drought" | "heavy-rain" | "heat" | "frost";
+
+function isInsidePolygon(lng: number, lat: number, points: Position[]) {
+  let inside = false;
+  for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+    const [xi, yi] = points[i], [xj, yj] = points[j];
+    const crosses = (yi > lat) !== (yj > lat) && lng < ((xj - xi) * (lat - yi)) / ((yj - yi) || 1e-12) + xi;
+    if (crosses) inside = !inside;
+  }
+  return inside;
+}
+
+interface Props { points: Position[]; mode: MapMode; cameraTarget: { position: Position; altitude?: number; key: string } | null; spin: boolean; scenario: WeatherScenario; severity: number; onChange: (points: Position[]) => void; onCameraMove?: (moving: boolean) => void }
 
 type WeatherLayerId = "rain" | "temperature" | "soil" | "vegetation";
 
@@ -16,9 +28,8 @@ const WEATHER_LAYERS: Record<WeatherLayerId, { label: string; source: string; pr
   vegetation: { label: "Vegetación", source: "NASA VIIRS NOAA-21", product: "VIIRS_NOAA21_NDVI_8Day", cadence: "cada 8 días", icon: Leaf },
 };
 
-export default function WizardMap({ points, mode, cameraTarget, spin, onChange, onCameraMove }: Props) {
+export default function WizardMap({ points, mode, cameraTarget, spin, scenario, severity, onChange, onCameraMove }: Props) {
   const host = useRef<HTMLDivElement>(null);
-  const weatherCanvas = useRef<HTMLCanvasElement>(null);
   const viewerRef = useRef<import("cesium").Viewer | null>(null);
   const cesiumRef = useRef<typeof import("cesium") | null>(null);
   const handlerRef = useRef<import("cesium").ScreenSpaceEventHandler | null>(null);
@@ -30,11 +41,13 @@ export default function WizardMap({ points, mode, cameraTarget, spin, onChange, 
   const [rainEnabled, setRainEnabled] = useState(true);
   const [weatherLayer, setWeatherLayer] = useState<WeatherLayerId>("rain");
   const [refreshKey, setRefreshKey] = useState(0);
+  const [impactNote, setImpactNote] = useState<string | null>(null);
   const rainEnabledRef = useRef(rainEnabled);
 
   useEffect(() => { rainEnabledRef.current = rainEnabled; }, [rainEnabled]);
 
   useEffect(() => { pointsRef.current = points; modeRef.current = mode; onChangeRef.current = onChange; }, [points, mode, onChange]);
+  useEffect(() => { setImpactNote(null); }, [scenario, points]);
 
   useEffect(() => {
     let disposed = false;
@@ -58,6 +71,13 @@ export default function WizardMap({ points, mode, cameraTarget, spin, onChange, 
         return [Cesium.Math.toDegrees(cartographic.longitude), Cesium.Math.toDegrees(cartographic.latitude)];
       };
       handler.setInputAction((event: { position: import("cesium").Cartesian2 }) => {
+        const picked = viewer.scene.pick(event.position)?.id as import("cesium").Entity | undefined;
+        const id = typeof picked?.id === "string" ? picked.id : "";
+        if (id.startsWith("scenario-impact-")) {
+          setImpactNote(picked?.name ?? "Zona de revisión simulada");
+          return;
+        }
+        setImpactNote(null);
         if (modeRef.current !== "draw") return;
         const point = positionAt(event.position); if (point) onChangeRef.current([...pointsRef.current, point]);
       }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
@@ -117,24 +137,22 @@ export default function WizardMap({ points, mode, cameraTarget, spin, onChange, 
 
   useEffect(() => {
     const Cesium = cesiumRef.current, viewer = viewerRef.current; if (!ready || !Cesium || !viewer || viewer.isDestroyed()) return;
-    for (const entity of viewer.entities.values.filter((item) => typeof item.id === "string" && item.id.startsWith("wizard-"))) viewer.entities.remove(entity);
+    for (const entity of viewer.entities.values.filter((item) => typeof item.id === "string" && (item.id.startsWith("wizard-") || item.id.startsWith("scenario-impact-")))) viewer.entities.remove(entity);
     if (points.length >= 3) {
+      const scenarioColor = scenario === "drought" ? "#f2a93b" : scenario === "heavy-rain" ? "#29b8e8" : scenario === "heat" ? "#f06445" : scenario === "frost" ? "#8bd8f5" : "#ff7881";
+      const parcelColor = Cesium.Color.fromCssColorString(scenarioColor);
+      const parcelAlpha = scenario === "none" ? .12 : .14 + Math.max(0, Math.min(100, severity)) / 100 * .12;
       const positions = points.map(([lng, lat]) => Cesium.Cartesian3.fromDegrees(lng, lat, 14));
-      viewer.entities.add({ id: "wizard-parcel", polygon: { hierarchy: positions, material: Cesium.Color.fromCssColorString("#e64b55").withAlpha(.27), outline: true, outlineColor: Cesium.Color.fromCssColorString("#ff7881"), outlineWidth: 3, perPositionHeight: false }, polyline: { positions: [...positions, positions[0]], width: 3, material: Cesium.Color.fromCssColorString("#ff6673"), clampToGround: true } });
+      viewer.entities.add({ id: "wizard-parcel", polygon: { hierarchy: positions, material: parcelColor.withAlpha(parcelAlpha), outline: true, outlineColor: parcelColor, outlineWidth: 3, perPositionHeight: false }, polyline: { positions: [...positions, positions[0]], width: 3, material: parcelColor, clampToGround: true } });
       points.forEach(([lng, lat], index) => viewer.entities.add({ id: `wizard-vertex-${index}`, position: Cesium.Cartesian3.fromDegrees(lng, lat, 25), point: { pixelSize: mode === "edit" ? 13 : 9, color: Cesium.Color.WHITE, outlineColor: Cesium.Color.fromCssColorString("#e64b55"), outlineWidth: 3, disableDepthTestDistance: Number.POSITIVE_INFINITY } }));
       if (mode === "edit") points.forEach(([lng, lat], index) => { const next = points[(index + 1) % points.length]; const midLng = (lng + next[0]) / 2, midLat = (lat + next[1]) / 2; viewer.entities.add({ id: `wizard-mid-${index}`, position: Cesium.Cartesian3.fromDegrees(midLng, midLat, 25), point: { pixelSize: 8, color: Cesium.Color.fromCssColorString("#ffca82"), outlineColor: Cesium.Color.fromCssColorString("#572c20"), outlineWidth: 2, disableDepthTestDistance: Number.POSITIVE_INFINITY } }); });
     }
     viewer.scene.requestRender();
-  }, [mode, points, ready]);
+  }, [mode, points, ready, scenario, severity]);
 
   useEffect(() => {
-    const Cesium = cesiumRef.current, viewer = viewerRef.current, canvas = weatherCanvas.current;
-    if (!ready || !Cesium || !viewer || !canvas || viewer.isDestroyed()) return;
-    let cancelled = false;
-    let animationFrame = 0;
-    let lastFrame = 0;
-    let context = canvas.getContext("2d", { alpha: true });
-    if (!context) return;
+    const Cesium = cesiumRef.current, viewer = viewerRef.current;
+    if (!ready || !Cesium || !viewer || viewer.isDestroyed()) return;
 
     // NASA GIBS serves the georeferenced satellite/model products directly as WMS imagery.
     const selectedLayer = WEATHER_LAYERS[weatherLayer];
@@ -146,87 +164,21 @@ export default function WizardMap({ points, mode, cameraTarget, spin, onChange, 
       credit: `${selectedLayer.source} · NASA GIBS`,
     });
     const imageryLayer = viewer.imageryLayers.addImageryProvider(provider);
-    imageryLayer.alpha = .84;
+    // IMERG is a regional ~10 km grid; fade it as the camera approaches field scale.
+    const updateLayerAlpha = () => {
+      const altitude = Math.max(1, viewer.camera.positionCartographic.height);
+      const regionalScale = Cesium.Math.clamp((Math.log10(altitude) - 3.5) / 1.7, 0, 1);
+      imageryLayer.alpha = .12 + regionalScale * .46;
+      viewer.scene.requestRender();
+    };
+    viewer.camera.changed.addEventListener(updateLayerAlpha);
+    updateLayerAlpha();
     imageryLayer.show = rainEnabledRef.current;
     rainLayerRef.current = imageryLayer;
     viewer.scene.requestRender();
 
-    const fitCanvas = () => {
-      const bounds = canvas.getBoundingClientRect();
-      if (!Number.isFinite(bounds.width) || !Number.isFinite(bounds.height) || bounds.width <= 0 || bounds.height <= 0) return;
-      const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
-      const maxPixels = 2_000_000;
-      const scale = Math.min(1, Math.sqrt(maxPixels / (bounds.width * bounds.height * ratio * ratio)));
-      const effectiveRatio = ratio * scale;
-      const width = Math.max(1, Math.min(2048, Math.round(bounds.width * effectiveRatio)));
-      const height = Math.max(1, Math.min(2048, Math.round(bounds.height * effectiveRatio)));
-      if (canvas.width !== width || canvas.height !== height) {
-        try {
-          canvas.width = width;
-          canvas.height = height;
-          const nextContext = canvas.getContext("2d", { alpha: true });
-          if (!nextContext) return;
-          context = nextContext;
-        } catch {
-          cancelled = true;
-          return;
-        }
-      }
-      try {
-        const activeContext = context;
-        if (!activeContext) return;
-        activeContext.setTransform(effectiveRatio, 0, 0, effectiveRatio, 0, 0);
-      } catch {
-        cancelled = true;
-        return;
-      }
-      const activeContext = context;
-      if (!activeContext) return;
-      return { width: bounds.width, height: bounds.height, context: activeContext };
-    };
-    const focus = cameraTarget?.position ?? [-63.5, -17.5] as [number, number];
-    let seed = Math.abs(Math.round(focus[0] * 10_000 + focus[1] * 100_000)) + 17;
-    const random = (min: number, max: number) => { seed = (seed * 16807) % 2147483647; return min + (seed / 2147483647) * (max - min); };
-    const particles = Array.from({ length: 76 }, () => ({
-      longitude: focus[0] + random(-.34, .34), latitude: focus[1] + random(-.26, .26),
-      direction: random(0, Math.PI * 2), speed: random(.45, 1.15), length: random(.012, .04),
-      phase: random(0, Math.PI * 2),
-    }));
-    const projected = (longitude: number, latitude: number) => Cesium.SceneTransforms.worldToWindowCoordinates(
-      viewer.scene, Cesium.Cartesian3.fromDegrees(longitude, latitude, 1800),
-    );
-    const drawParticles = (time: number) => {
-      if (cancelled) return;
-      animationFrame = window.requestAnimationFrame(drawParticles);
-      if (time - lastFrame < 48) return;
-      lastFrame = time;
-      const size = fitCanvas(); if (!size) return;
-      size.context.clearRect(0, 0, size.width, size.height);
-      if (!rainEnabledRef.current || weatherLayer !== "rain" || document.hidden) return;
-      for (const particle of particles) {
-        // Windy-inspired moving traces: decorative flow only; GPM provides rain, not wind vectors.
-        const angle = particle.direction + Math.sin(particle.longitude * 17 + particle.latitude * 23 + particle.phase) * .42;
-        const dx = Math.cos(angle) * .0012 * particle.speed, dy = Math.sin(angle) * .0012 * particle.speed;
-        particle.longitude += dx; particle.latitude += dy;
-        if (Math.abs(particle.longitude - focus[0]) > .36 || Math.abs(particle.latitude - focus[1]) > .28) {
-          particle.longitude = focus[0] + random(-.34, .34); particle.latitude = focus[1] + random(-.26, .26);
-        }
-        const head = projected(particle.longitude, particle.latitude);
-        const tail = projected(particle.longitude - Math.cos(angle) * particle.length, particle.latitude - Math.sin(angle) * particle.length);
-        if (!head || !tail || head.x < -20 || head.y < -20 || head.x > size.width + 20 || head.y > size.height + 20) continue;
-         size.context.beginPath(); size.context.moveTo(tail.x, tail.y); size.context.lineTo(head.x, head.y);
-         size.context.strokeStyle = `rgba(221,250,255,${.35 + particle.speed * .25})`;
-         size.context.lineWidth = .9 + particle.speed * .8; size.context.lineCap = "round"; size.context.stroke();
-         size.context.beginPath(); size.context.arc(head.x, head.y, .7 + particle.speed * .55, 0, Math.PI * 2);
-         size.context.fillStyle = "rgba(243,255,234,.85)"; size.context.fill();
-      }
-    };
-    const onVisibilityChange = () => { if (!document.hidden) viewer.scene.requestRender(); };
-    document.addEventListener("visibilitychange", onVisibilityChange);
-    const resize = new ResizeObserver(fitCanvas); resize.observe(canvas);
-    animationFrame = window.requestAnimationFrame(drawParticles);
     return () => {
-      cancelled = true; window.cancelAnimationFrame(animationFrame); resize.disconnect(); document.removeEventListener("visibilitychange", onVisibilityChange);
+      viewer.camera.changed.removeEventListener(updateLayerAlpha);
       if (!viewer.isDestroyed()) viewer.imageryLayers.remove(imageryLayer, true);
       if (rainLayerRef.current === imageryLayer) rainLayerRef.current = null;
     };
@@ -240,6 +192,50 @@ export default function WizardMap({ points, mode, cameraTarget, spin, onChange, 
   }, [rainEnabled, ready]);
 
   useEffect(() => {
+    const Cesium = cesiumRef.current, viewer = viewerRef.current;
+    if (!ready || !Cesium || !viewer || viewer.isDestroyed()) return;
+    for (const entity of viewer.entities.values.filter((item) => typeof item.id === "string" && item.id.startsWith("scenario-impact-"))) viewer.entities.remove(entity);
+    if (scenario === "none" || points.length < 3) return;
+    const color = scenario === "drought" ? "#f2a93b"
+      : scenario === "heavy-rain" ? "#29b8e8"
+        : scenario === "heat" ? "#f06445"
+          : scenario === "frost" ? "#8bd8f5" : "#e64b55";
+    // Generate a stable, illustrative pattern of review zones strictly inside the parcel.
+    // These are not satellite measurements; actual environmental raster data belongs here later.
+    const west = Math.min(...points.map(([lng]) => lng)), east = Math.max(...points.map(([lng]) => lng));
+    const south = Math.min(...points.map(([, lat]) => lat)), north = Math.max(...points.map(([, lat]) => lat));
+    const seeds: Position[] = [];
+    const cols = 9, rows = 9;
+    for (let row = 0; row < rows; row++) for (let col = 0; col < cols; col++) {
+      const lng = west + (col + .5) / cols * (east - west), lat = south + (row + .5) / rows * (north - south);
+      if (isInsidePolygon(lng, lat, points)) seeds.push([lng, lat]);
+    }
+    // Avoid a dense carpet of dots for tiny parcels while keeping distinct zones visible.
+    const sampleCount = Math.min(7, seeds.length);
+    const sample = sampleCount ? Array.from({ length: sampleCount }, (_, index) => seeds[Math.floor(index * (seeds.length - 1) / Math.max(1, sampleCount - 1))]) : [];
+    const baseColor = Cesium.Color.fromCssColorString(color);
+    const strength = Cesium.Math.clamp(severity / 100, .25, 1);
+    const impactLabel = scenario === "drought" ? "Revisar humedad" : scenario === "heavy-rain" ? "Revisar escorrentía" : scenario === "heat" ? "Revisar estrés térmico" : "Revisar riesgo de helada";
+    sample.forEach(([lng, lat], index) => {
+      // Mild deterministic variation makes the map communicate relative attention, not uniformity.
+      const variation = .55 + (((index * 37 + Math.round(Math.abs(lng * 1e4 + lat * 1e5))) % 43) / 100);
+      const risk = Cesium.Math.clamp(strength * variation, 0, 1);
+      const markerColor = risk > .78 ? Cesium.Color.fromCssColorString("#ff745f") : risk > .56 ? baseColor : Cesium.Color.fromCssColorString("#d9ef9a");
+      const pointSize = 12 + Math.round(risk * 10);
+      const riskClass = risk > .78 ? "Prioridad alta" : risk > .56 ? "Prioridad media" : "Prioridad de seguimiento";
+      viewer.entities.add({
+        id: `scenario-impact-${index}`,
+        name: `${impactLabel} · ${riskClass.toLowerCase()}`,
+        description: `Zona ilustrativa con ${riskClass.toLowerCase()}. Úsala como guía para decidir dónde inspeccionar; no es una medición satelital ni una observación de campo.`,
+        position: Cesium.Cartesian3.fromDegrees(lng, lat, 35),
+        point: { pixelSize: pointSize, color: markerColor.withAlpha(.9), outlineColor: Cesium.Color.WHITE, outlineWidth: 2, disableDepthTestDistance: Number.POSITIVE_INFINITY },
+        label: { text: index === 0 ? impactLabel : riskClass.replace("Prioridad ", ""), font: "10px Arial", fillColor: Cesium.Color.WHITE, outlineColor: Cesium.Color.fromCssColorString("#07131c"), outlineWidth: 3, style: Cesium.LabelStyle.FILL_AND_OUTLINE, pixelOffset: new Cesium.Cartesian2(0, -20), scale: .82, showBackground: true, backgroundColor: Cesium.Color.fromCssColorString("#07131c").withAlpha(.82), backgroundPadding: new Cesium.Cartesian2(5, 3), disableDepthTestDistance: Number.POSITIVE_INFINITY, show: sampleCount <= 4 || index === 0 },
+      });
+    });
+    viewer.scene.requestRender();
+  }, [scenario, severity, ready, points]);
+
+  useEffect(() => {
     const interval = WEATHER_LAYERS[weatherLayer].cadence === "cada 30 min" ? 30 * 60_000 : 6 * 60 * 60_000;
     const timer = window.setInterval(() => setRefreshKey((current) => current + 1), interval);
     return () => window.clearInterval(timer);
@@ -249,7 +245,13 @@ export default function WizardMap({ points, mode, cameraTarget, spin, onChange, 
 
   return <>
     <div ref={host} className="wizard-cesium" aria-label="Globo 3D interactivo para ubicar y editar la parcela" />
-    <canvas ref={weatherCanvas} className="wizard-weather-canvas" aria-hidden="true" />
+    {impactNote && <div className="wizard-impact-note" role="status"><strong>{impactNote}</strong><span>Zona ilustrativa: inspecciona el suelo y contrasta con condiciones observadas en el lote.</span><button type="button" onClick={() => setImpactNote(null)} aria-label="Cerrar nota">×</button></div>}
+    {scenario !== "none" && <div className={`wizard-scenario-map-key scenario-key-${scenario}`} aria-live="polite">
+      <strong>ZONAS DE REVISIÓN · DEMO</strong>
+      <span><i className="impact-high" />Mayor atención</span>
+      <span><i className="impact-mid" />Atención media</span>
+      <small>Selecciona un punto para ver su nota.</small>
+    </div>}
     <div className="wizard-rain-control" aria-label="Capas de observación de NASA">
       <button type="button" className={`wizard-rain-toggle ${rainEnabled ? "is-on" : ""}`} onClick={() => setRainEnabled((current) => !current)} aria-pressed={rainEnabled} title={rainEnabled ? "Ocultar la capa del mapa" : "Mostrar la capa del mapa"}>
         <span className="wizard-rain-icon"><WeatherIcon size={17} /></span>
@@ -267,7 +269,7 @@ export default function WizardMap({ points, mode, cameraTarget, spin, onChange, 
       {rainEnabled && <div className="wizard-rain-legend">
         <div><Droplets size={13} /><span>{weatherLayer === "rain" ? "Tasa de precipitación · mm/h" : selectedWeatherLayer.source}</span></div>
         <span className={`wizard-weather-gradient ${weatherLayer}`} />
-        <div className="wizard-rain-scale"><span>{weatherLayer === "rain" ? "0.1 mm/h" : "Bajo"}</span><strong>NASA GIBS · {selectedWeatherLayer.cadence}</strong><span>{weatherLayer === "rain" ? "50+ mm/h" : "Alto"}</span></div>
+        <div className="wizard-rain-scale"><span>{weatherLayer === "rain" ? "0.1 mm/h" : "Bajo"}</span><strong>{weatherLayer === "rain" ? "~10 km · 30 min" : `NASA GIBS · ${selectedWeatherLayer.cadence}`}</strong><span>{weatherLayer === "rain" ? "50+ mm/h" : "Alto"}</span></div>
       </div>}
     </div>
   </>;

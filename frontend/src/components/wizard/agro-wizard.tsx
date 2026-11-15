@@ -7,7 +7,7 @@ import LocationCard from "./location-card";
 import PlanCard from "./plan-card";
 import ResultsCard from "./results-card";
 import FieldChat from "./field-chat";
-import WizardMap from "./wizard-map";
+import WizardMap, { type WeatherScenario } from "./wizard-map";
 import { WizardProvider, useWizard, type MapMode } from "./wizard-store";
 import { closePolygon, defaultParcel, MAX_PARCEL_HA, parcelGeometry, validateParcel } from "../../lib/wizard-geometry";
 import { plantingWindow } from "../../lib/wizard-dates";
@@ -28,6 +28,8 @@ function WizardContent() {
   const [loading, setLoading] = useState(false), [pageError, setPageError] = useState("");
   const [showPlanValidation, setShowPlanValidation] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
+  const [weatherScenario, setWeatherScenario] = useState<WeatherScenario>("none");
+  const [scenarioSeverity, setScenarioSeverity] = useState(65);
   const abortRef = useRef<AbortController | null>(null);
   const points = useMemo(() => polygonPoints(polygon), [polygon]);
   const geometry = useMemo(() => parcelGeometry(points), [points]);
@@ -104,7 +106,7 @@ function WizardContent() {
               </div>
             </div>
             <div className="wizard-map-stage">
-               <WizardMap points={points} mode={mapMode} cameraTarget={cameraTarget} spin={!location} onCameraMove={setCameraMoving} onChange={(next) => { setPolygon(next.length ? closePolygon(next) : null); setPageError(""); }} />
+               <WizardMap points={points} mode={mapMode} cameraTarget={cameraTarget} spin={!location} scenario={step === 3 ? weatherScenario : "none"} severity={scenarioSeverity} onCameraMove={setCameraMoving} onChange={(next) => { setPolygon(next.length ? closePolygon(next) : null); setPageError(""); }} />
               <div className="wizard-map-top-hud"><span><i /> GLOBO DE LA TIERRA · CESIUM</span></div>
               {points.length >= 3 && <div className="wizard-map-measure"><span><small>SUPERFICIE DEL TERRENO</small><strong>{geometry.areaHa.toLocaleString("es-BO", { maximumFractionDigits: 2 })} <em>ha</em></strong><i>{geometry.areaHa < 100 ? `${Math.round(geometry.areaHa * 10_000).toLocaleString("es-BO")} m²` : `${(geometry.areaHa / 100).toFixed(2)} km²`}</i></span><span className="wizard-measure-divider" /><span><small>CENTRO APROXIMADO</small><strong className="wizard-coordinate">{Math.abs(geometry.center[1]).toFixed(4)}° S <i>·</i> {Math.abs(geometry.center[0]).toFixed(4)}° O</strong><i>{points.length} vértices</i></span></div>}
               {location && mapMode === "draw" && <div className="wizard-map-instruction"><Sparkles size={13} /> Haz clic en el mapa para marcar cada esquina del campo. Pulsa <kbd>Listo</kbd> al terminar.</div>}
@@ -123,7 +125,7 @@ function WizardContent() {
         <aside className={`wizard-side-card ${step === 3 ? "results-side-card" : ""}`}>
            {step === 1 && <><LocationCard selected={location} canContinue={Boolean(location) && !parcelError && !cameraMoving} onChoose={chooseLocation} onContinue={goToPlans} onBack={undefined} />{pageError && <div className="wizard-form-error" role="alert"><AlertCircle size={16} />{pageError}</div>}</>}
            {step === 2 && <><PlanCard onBack={() => { setStep(1); setMapMode("view"); }} onContinue={() => void loadAnalysis()} loading={loading} showValidation={showPlanValidation} />{pageError && <div className="wizard-form-error" role="alert"><AlertCircle size={16} />{pageError}</div>}</>}
-           {step === 3 && (loading || !diagnosis || !suggestions ? <ResultsSkeleton /> : <ResultsCard onBack={() => { setStep(2); setMapMode("view"); }} />)}
+           {step === 3 && (loading || !diagnosis || !suggestions ? <ResultsSkeleton /> : <ResultsCard onBack={() => { setStep(2); setMapMode("view"); }} scenario={weatherScenario} onScenarioChange={setWeatherScenario} severity={scenarioSeverity} onSeverityChange={setScenarioSeverity} />)}
         </aside>
       </div>
 

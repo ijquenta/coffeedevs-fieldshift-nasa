@@ -1,11 +1,26 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
-import { AlertTriangle, ArrowDownRight, ArrowLeft, ArrowUpRight, CheckCircle2, CircleHelp, CloudRain, Droplets, Leaf, Mountain, Pause, Play, Satellite, ShieldAlert, Snowflake, Sparkles, Sprout, StopCircle, Thermometer, Volume2, Waves } from "lucide-react";
+import { AlertTriangle, ArrowDownRight, ArrowLeft, ArrowUpRight, CheckCircle2, CircleHelp, CloudRain, Droplets, Flame, Leaf, Mountain, Pause, Play, RotateCcw, Satellite, ShieldAlert, Snowflake, Sparkles, Sprout, StopCircle, Thermometer, Volume2, Waves } from "lucide-react";
 import { useWizard } from "./wizard-store";
+import type { WeatherScenario } from "./wizard-map";
 
 const confidenceText = { alta: "Buena señal", media: "Señal parcial", baja: "Pocos datos" };
-export default function ResultsCard({ onBack }: { onBack: () => void }) {
+const scenarios: { id: WeatherScenario; label: string; icon: typeof CloudRain; color: string }[] = [
+  { id: "none", label: "Actual", icon: RotateCcw, color: "neutral" },
+  { id: "drought", label: "Sequía", icon: Droplets, color: "drought" },
+  { id: "heavy-rain", label: "Lluvia intensa", icon: CloudRain, color: "rain" },
+  { id: "heat", label: "Ola de calor", icon: Flame, color: "heat" },
+  { id: "frost", label: "Helada", icon: Snowflake, color: "frost" },
+];
+const scenarioGuidance: Record<Exclude<WeatherScenario, "none">, { title: string; signal: string; action: string; color: string }> = {
+  drought: { title: "Dónde revisar primero", signal: "La simulación concentra puntos de atención por posible falta de agua disponible.", action: "Compara 2–3 puntos del lote con una revisión manual de humedad antes de ajustar el riego.", color: "drought" },
+  "heavy-rain": { title: "Vigila acumulación y escorrentía", signal: "Los puntos resaltan zonas de revisión ante un episodio de lluvia intensa.", action: "Revisa drenajes y zonas bajas; evita entrar con maquinaria si el suelo está saturado.", color: "rain" },
+  heat: { title: "Anticipa mayor demanda de agua", signal: "Los puntos representan sectores para revisar bajo una ola de calor hipotética.", action: "Observa el cultivo en las horas más frescas y prioriza el agua según etapa y disponibilidad local.", color: "heat" },
+  frost: { title: "Comprueba los sectores expuestos", signal: "La simulación marca puntos de revisión ante posible enfriamiento o helada.", action: "Contrasta el pronóstico local y la etapa del cultivo antes de aplicar medidas de protección.", color: "frost" },
+};
+
+export default function ResultsCard({ onBack, scenario, onScenarioChange, severity, onSeverityChange }: { onBack: () => void; scenario: WeatherScenario; onScenarioChange: (scenario: WeatherScenario) => void; severity: number; onSeverityChange: (severity: number) => void }) {
   const { diagnosis, suggestions, resultTab, setResultTab } = useWizard();
   const [speaking, setSpeaking] = useState(false), [paused, setPaused] = useState(false), [boundary, setBoundary] = useState(0);
   const narration = useMemo(() => diagnosis ? `Para ${diagnosis.metadatos.zona}, estas son posibilidades para explorar. ${diagnosis.probabilidades.slice(0, 3).map((crop) => `${crop.cultivo}, entre ${crop.min} y ${crop.max} por ciento de idoneidad indicativa.`).join(" ")} Revisa las alertas de agua y temperatura, y conversa con una persona técnica local antes de tomar una decisión.` : "", [diagnosis]);
@@ -20,6 +35,21 @@ export default function ResultsCard({ onBack }: { onBack: () => void }) {
   const highlightNarration = () => { const end = narration.indexOf(" ", boundary + 1); return <>{narration.slice(0, boundary)}<mark>{narration.slice(boundary, end < 0 ? narration.length : end)}</mark>{narration.slice(end < 0 ? narration.length : end)}</>; };
   return <section className="wizard-card-body wizard-results-card">
      <div className="wizard-result-heading"><div className="wizard-card-title-row"><div><h1>Tu parcela, en perspectiva.</h1><p className="wizard-card-intro">Señales para explorar escenarios posibles; no son certezas de cosecha.</p></div><button className="wizard-card-back-button" onClick={onBack} aria-label="Volver a planes"><ArrowLeft size={16} /> Atrás</button></div></div>
+    <section className="wizard-scenario-simulator" aria-label="Simulador visual de escenarios climáticos">
+      <div className="wizard-scenario-heading"><div><span>EXPLORA POSIBLES CAMBIOS</span><strong>¿Y si cambia el clima?</strong><small>Observa zonas de revisión dentro de tu parcela.</small></div><b>SIMULACIÓN</b></div>
+      <div className="wizard-scenario-options" role="group" aria-label="Escenario climático">
+        {scenarios.map(({ id, label, icon: Icon, color }) => <button key={id} type="button" className={`${scenario === id ? "is-active" : ""} scenario-${color}`} onClick={() => onScenarioChange(id)} aria-pressed={scenario === id}><Icon size={14} /><span>{label}</span></button>)}
+      </div>
+      {scenario !== "none" && <label className="wizard-scenario-severity"><span>Intensidad del escenario</span><strong>{severity}%</strong><input type="range" min="25" max="100" step="5" value={severity} onChange={(event) => onSeverityChange(Number(event.target.value))} /></label>}
+      {scenario !== "none" && <div className={`wizard-scenario-guidance guidance-${scenarioGuidance[scenario].color}`}>
+        <div className="wizard-scenario-guidance-top"><strong>{scenarioGuidance[scenario].title}</strong><span>{severity >= 75 ? "ATENCIÓN ALTA" : severity >= 50 ? "ATENCIÓN MEDIA" : "ATENCIÓN BAJA"}</span></div>
+        <p>{scenarioGuidance[scenario].signal}</p>
+        <div><b>QUÉ HACER</b><p>{scenarioGuidance[scenario].action}</p></div>
+        <small>Los puntos son una distribución didáctica; el patrón espacial no procede de una medición real.</small>
+      </div>}
+      <p>La simulación ayuda a planificar qué revisar; no modifica el diagnóstico ni representa una observación satelital real.</p>
+    </section>
+
     <div className="wizard-result-tabs" role="tablist" aria-label="Vista del análisis"><button role="tab" aria-selected={resultTab === "diagnostico"} className={resultTab === "diagnostico" ? "active" : ""} onClick={() => setResultTab("diagnostico")}><Satellite size={14} /> Diagnóstico</button><button role="tab" aria-selected={resultTab === "sugerencias"} className={resultTab === "sugerencias" ? "active" : ""} onClick={() => setResultTab("sugerencias")}><Sparkles size={14} /> Sugerencias <span>{suggestions.alertas.length}</span></button></div>
 
     {resultTab === "diagnostico" ? <div className="wizard-diagnosis-pane">
