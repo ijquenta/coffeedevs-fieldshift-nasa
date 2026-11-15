@@ -1,0 +1,13 @@
+from typing import Any, Optional, Protocol
+
+
+class ChatSessionStore(Protocol):
+    """Contrato mínimo para almacenar y recuperar sesiones de chat."""
+
+    def save(self, session_id: str, session: Any) -> None: ...
+
+    def get(self, session_id: str) -> Optional[Any]: ...
+
+    def delete(self, session_id: str) -> bool: ...
+
+    def exists(self, session_id: str) -> bool: ...
