@@ -70,6 +70,9 @@
 .wizard-card-body em,
 .wizard-card-body .wizard-recommend-option small { font-size: var(--font-small); }
 .wizard-validation-hint { margin: 12px 0; padding: 10px 12px; border-left: 3px solid var(--amber); border-radius: 8px; background: rgba(240,189,120,.1); color: #f0bd78; font-size: var(--font-small); line-height: 1.4; }
+.wizard-input-invalid { border-color: #ff334d !important; box-shadow: 0 0 0 2px rgba(255,51,77,.3), 0 0 14px rgba(255,51,77,.16); }
+.wizard-input-invalid:focus { outline-color: #ff334d; }
+.wizard-input-error { margin: 7px 0 0; color: #ff5267; font-size: var(--font-small); line-height: 1.35; }
 .wizard-privacy-trigger { display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; padding: 10px 14px; border: 1px solid rgba(240,189,120,.35); border-radius: 999px; background: rgba(240,189,120,.1); color: #f0bd78; cursor: pointer; font-size: var(--font-small); }
 .wizard-privacy-backdrop { position: fixed; inset: 0; z-index: 130; display: flex; justify-content: flex-end; background: rgba(2,9,15,.58); }
 .wizard-privacy-popup { position: relative; width: min(430px, 100%); min-height: 100%; padding: 38px 28px; border-left: 1px solid rgba(240,189,120,.35); background: linear-gradient(145deg, #172b35, #091721); box-shadow: -18px 0 60px rgba(0,0,0,.4); animation: wizard-slide-in .24s ease-out; }

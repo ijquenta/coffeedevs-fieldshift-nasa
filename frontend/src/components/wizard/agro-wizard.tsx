@@ -26,6 +26,7 @@ function WizardContent() {
   const [cameraTarget, setCameraTarget] = useState<{ position: Position; altitude: number; key: string } | null>(null);
   const [cameraMoving, setCameraMoving] = useState(false);
   const [loading, setLoading] = useState(false), [pageError, setPageError] = useState("");
+  const [showPlanValidation, setShowPlanValidation] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const points = useMemo(() => polygonPoints(polygon), [polygon]);
@@ -71,7 +72,7 @@ function WizardContent() {
 
   const loadAnalysis = async () => {
     if (parcelError) { setPageError(parcelError); return; }
-    if (productError) { setPageError("Elige un cultivo o marca que quieres recibir recomendaciones."); return; }
+     if (productError) { setShowPlanValidation(true); return; }
     if (dateError) { setPageError("Revisa el periodo de siembra: la fecha final debe ser igual o posterior a la inicial."); return; }
     const request = createRequest(); if (!request) { setPageError("Selecciona una ubicación y delimita tu parcela antes de continuar."); return; }
     abortRef.current?.abort(); const controller = new AbortController(); abortRef.current = controller;
@@ -122,7 +123,7 @@ function WizardContent() {
 
         <aside className={`wizard-side-card ${step === 3 ? "results-side-card" : ""}`}>
            {step === 1 && <><LocationCard selected={location} canContinue={Boolean(location) && !parcelError && !cameraMoving} onChoose={chooseLocation} onContinue={goToPlans} onBack={undefined} />{pageError && <div className="wizard-form-error" role="alert"><AlertCircle size={16} />{pageError}</div>}</>}
-           {step === 2 && <><PlanCard onBack={() => { setStep(1); setMapMode("view"); }} onContinue={() => void loadAnalysis()} loading={loading} />{pageError && <div className="wizard-form-error" role="alert"><AlertCircle size={16} />{pageError}</div>}{(productError || dateError) && <div className="wizard-validation-hint" role="status">Completa los campos pendientes antes de cargar el análisis.</div>}</>}
+           {step === 2 && <><PlanCard onBack={() => { setStep(1); setMapMode("view"); }} onContinue={() => void loadAnalysis()} loading={loading} showValidation={showPlanValidation} />{pageError && <div className="wizard-form-error" role="alert"><AlertCircle size={16} />{pageError}</div>}</>}
            {step === 3 && (loading || !diagnosis || !suggestions ? <ResultsSkeleton /> : <ResultsCard onBack={() => { setStep(2); setMapMode("view"); }} />)}
         </aside>
       </div>
