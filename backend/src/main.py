@@ -4,6 +4,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from src.controllers.power_controller import router as power_router
+from src.controllers.soil_controller import router as soil_router
 from src.controllers.ine_controller import router as ine_router
 from src.controllers import api_router
 from src.core.config import get_settings
@@ -120,5 +121,6 @@ def health_check() -> dict[str, str]:
 
 
 app.include_router(power_router)
+app.include_router(soil_router)
 app.include_router(ine_router)
 app.include_router(api_router, prefix=settings.API_V1_PREFIX)
