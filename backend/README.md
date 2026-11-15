@@ -119,7 +119,10 @@ python -m unittest tests/test_chat_module.py
 
 | Método | Endpoint | Descripción |
 |---|---|---|
+| `POST` | `/api/power/polygon/recommendation` | Consulta NASA POWER y devuelve `recommendation` (Markdown detallado) y `audio_summary` (resumen sencillo para voz) |
 | `POST` | `/api/v1/chat/message` | Envía mensaje al copiloto (crea o continúa hilo) |
 | `GET` | `/api/v1/chat/{session_id}/history` | Obtiene el historial completo de la conversación |
 | `DELETE` | `/api/v1/chat/{session_id}` | Cierra y elimina la sesión activa de memoria |
 | `GET` | `/health` | Chequeo de salud del servicio |
+
+El endpoint de recomendación recibe los mismos campos que `/api/power/polygon`, además de `plants` (obligatorio), `priorities`, `municipality_id`, `municipality_name`, `crop_requirements` y `current_crop` (opcionales). Solo admite resolución `daily` u `hourly`. El prompt de Gemini se carga desde `docs/prompt.md`.
