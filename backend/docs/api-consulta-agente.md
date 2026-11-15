@@ -1,5 +1,67 @@
 # Documentación: recomendación agrícola para un polígono
 
+## Estudio de suelo
+
+### Endpoint
+
+```http
+POST /api/soil/polygon
+Content-Type: application/json
+```
+
+Este endpoint consulta variables físicas del suelo usando NASA POWER Agroclimatology y Open-Meteo. No requiere token ni API key. Las consultas repetidas se reutilizan desde la caché local SQLite.
+
+### Campos de la solicitud
+
+| Campo | Obligatorio | Tipo / valores | Descripción |
+|---|---:|---|---|
+| `geometry` | Sí | GeoJSON `Polygon` | Polígono que se analizará. |
+| `geometry.coordinates` | Sí | Lista de posiciones | Coordenadas siempre en orden `[longitud, latitud]`. |
+| `temporal` | No | `"daily"` o `"monthly"` | Resolución temporal. Predeterminado: `"daily"`. |
+| `start` | Sí | `YYYY-MM-DD` | Fecha inicial del período. |
+| `end` | Sí | `YYYY-MM-DD` | Fecha final; debe ser igual o posterior a `start`. |
+| `parameters` | Sí* | Lista de métricas | `sm_surface`, `sm_rootzone`, `soil_temp`, `sm_profile`. |
+| `presets` | Sí* | `soil`, `moisture`, `temperature` | Grupos de métricas predefinidos. |
+| `grid_step` | No | Número entre `0.05` y `5.0` | Separación de los puntos muestreados. Predeterminado: `0.1`. |
+| `include_points` | No | `true` o `false` | Incluye el detalle de cada punto. Predeterminado: `false`. |
+
+\* Debe enviarse al menos un elemento en `parameters` o `presets`.
+
+Métricas disponibles:
+
+- `sm_surface`: humedad superficial del suelo.
+- `sm_rootzone`: humedad de la zona radicular.
+- `soil_temp`: temperatura del suelo.
+- `sm_profile`: saturación del perfil del suelo.
+
+### Ejemplo de solicitud
+
+```json
+{
+  "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+      [
+        [-68.15, -16.52],
+        [-68.10, -16.52],
+        [-68.10, -16.48],
+        [-68.15, -16.48],
+        [-68.15, -16.52]
+      ]
+    ]
+  },
+  "temporal": "daily",
+  "start": "2024-01-01",
+  "end": "2024-01-05",
+  "parameters": [],
+  "presets": ["soil"],
+  "grid_step": 0.1,
+  "include_points": true
+}
+```
+
+La respuesta contiene `query`, `points_requested`, `points_ok`, `parameters`, `aggregated`, `summary`, `points` y `errors`. `aggregated` devuelve el promedio espacial por fecha y `summary` incluye `min`, `max`, `mean` y `count`.
+
 ## Endpoint
 
 ```http
