@@ -34,9 +34,15 @@ class FakeAIChatProvider:
     def __init__(self) -> None:
         self.sessions: List[MockAIChatSession] = []
         self.last_system_instruction: str = ""
+        self.last_response_json_schema: dict[str, Any] | None = None
 
-    def create_session(self, system_instruction: str) -> Any:
+    def create_session(
+        self,
+        system_instruction: str,
+        response_json_schema: dict[str, Any] | None = None,
+    ) -> Any:
         self.last_system_instruction = system_instruction
+        self.last_response_json_schema = response_json_schema
         session = MockAIChatSession(system_instruction)
         self.sessions.append(session)
         return session
@@ -233,6 +239,11 @@ class TestProveedorGemini(unittest.TestCase):
         from unittest.mock import MagicMock
         from src.infrastructure.gemini_chat_provider import GeminiProvider
         from google.genai import types
+        from pydantic import BaseModel
+
+        class StructuredOutput(BaseModel):
+            recommendation: str
+            audio_summary: str
 
         mock_client = MagicMock()
         mock_chat = MagicMock()
@@ -260,6 +271,17 @@ class TestProveedorGemini(unittest.TestCase):
         self.assertEqual(history[0].text, "Pregunta")
         self.assertEqual(history[1].role, "model")
         self.assertEqual(history[1].text, "Respuesta")
+
+        provider.create_session(
+            "instruccion de salida JSON",
+            response_json_schema=StructuredOutput.model_json_schema(),
+        )
+        config = mock_client.chats.create.call_args.kwargs["config"]
+        self.assertEqual(config.response_mime_type, "application/json")
+        self.assertEqual(
+            set(config.to_json_dict()["response_json_schema"]["properties"]),
+            {"recommendation", "audio_summary"},
+        )
 
 
 if __name__ == "__main__":

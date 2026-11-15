@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, ValidationError
 
 from src.domain.exceptions import AIProviderError
 from src.interfaces.ai_chat_provider import ChatProvider
@@ -20,8 +20,8 @@ PROMPT_PATH = Path(__file__).resolve().parents[2] / "docs" / "prompt.md"
 
 
 class _RecommendationContent(BaseModel):
-    recommendation: str = Field(min_length=1)
-    audio_summary: str = Field(min_length=1)
+    recommendation: str
+    audio_summary: str
 
 
 class PolygonRecommendationService:
@@ -45,9 +45,17 @@ class PolygonRecommendationService:
         try:
             content = _RecommendationContent.model_validate_json(raw_reply)
         except ValidationError as exc:
+            issues = "; ".join(
+                f"{'.'.join(str(part) for part in error['loc'])}: {error['msg']}"
+                for error in exc.errors()
+            )
             raise AIProviderError(
-                "Gemini no devolvió el JSON requerido con 'recommendation' y 'audio_summary'."
+                f"Gemini devolvió una salida JSON incompleta o inválida: {issues}"
             ) from exc
+        if not content.recommendation.strip() or not content.audio_summary.strip():
+            raise AIProviderError(
+                "Gemini devolvió campos vacíos para 'recommendation' o 'audio_summary'."
+            )
         return PolygonRecommendationResponse(
             polygon=polygon,
             recommendation=content.recommendation,
@@ -55,7 +63,10 @@ class PolygonRecommendationService:
         )
 
     def _generate_reply(self, prompt: str, message: str) -> str:
-        session = self._chat_provider.create_session(prompt)
+        session = self._chat_provider.create_session(
+            prompt,
+            response_json_schema=_RecommendationContent.model_json_schema(),
+        )
         return self._chat_provider.send_message(session, message)
 
     @staticmethod
