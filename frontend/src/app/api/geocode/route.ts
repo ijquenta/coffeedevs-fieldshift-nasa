@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
   if (Date.now() - lastProviderRequestAt < 1100) return NextResponse.json({ error: "Espera un segundo antes de hacer otra búsqueda." }, { status: 429, headers: { "Retry-After": "1" } });
   lastProviderRequestAt = Date.now();
   const contact = process.env.GEOCODER_CONTACT_EMAIL;
-  const userAgent = `YapanaAgro/1.0 (NASA Space Apps 2026${contact ? `; contact: ${contact}` : ""})`;
+  const userAgent = `YanapiriAgro/1.0 (NASA Space Apps 2026${contact ? `; contact: ${contact}` : ""})`;
   try {
     const upstream = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&addressdetails=1&q=${encodeURIComponent(query)}`, { headers: { "User-Agent": userAgent, "Accept-Language": "es" }, signal: AbortSignal.timeout(6000), cache: "no-store" });
     if (!upstream.ok) return NextResponse.json({ error: "El servicio de mapas no respondió." }, { status: 502 });

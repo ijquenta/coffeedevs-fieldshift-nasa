@@ -1,4 +1,4 @@
-# Contrato de API · Wizard de Yapana Agro
+# Contrato de API · Wizard de Yanapiri Agro
 
 La interfaz se conecta mediante `src/services/wizard.ts`. Los componentes no llaman directamente al backend. En desarrollo `NEXT_PUBLIC_USE_MOCK=true` usa respuestas determinísticas con el mismo contrato; `false` usa `NEXT_PUBLIC_API_BASE_URL`.
 

@@ -18,7 +18,7 @@
   border-radius: 999px;
   background: rgba(201, 239, 129, .09);
   color: #d8f3ae;
-  font-size: 11px;
+  font-size: var(--font-button);
   white-space: nowrap;
   cursor: pointer;
 }
@@ -26,6 +26,64 @@
 .wizard-install-button:hover {
   background: rgba(201, 239, 129, .17);
 }
+
+.wizard-card-body h1 { font-size: var(--font-large); }
+.wizard-card-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.wizard-card-title-row h1 { margin: 0; }
+.wizard-card-back-button { display: inline-flex; flex: none; align-items: center; gap: 6px; margin-top: 4px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; background: rgba(255,255,255,.04); color: var(--muted); cursor: pointer; }
+.wizard-card-back-button:hover { border-color: rgba(201,239,129,.35); color: var(--lime); }
+.wizard-map-toolbar-empty { min-height: 0; height: 0; padding: 0; border-bottom: 0; overflow: visible; position: relative; z-index: 5; }
+.wizard-map-toolbar-empty .wizard-map-tools { position: absolute; top: 12px; right: 12px; }
+.wizard-map-toolbar-empty .wizard-map-tools button {
+  border-color: rgba(255, 255, 255, .2);
+  background: rgba(5, 14, 22, .82);
+  box-shadow: 0 5px 18px rgba(0, 0, 0, .3);
+  backdrop-filter: blur(8px);
+}
+.wizard-map-toolbar-empty .wizard-map-tools button:hover,
+.wizard-map-toolbar-empty .wizard-map-tools button.active {
+  border-color: rgba(201, 239, 129, .5);
+  background: rgba(19, 45, 39, .92);
+}
+.wizard-primary-button { min-height: 48px; }
+.wizard-load-row .wizard-primary-button { align-self: stretch; }
+.wizard-card-actions { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+.wizard-card-actions .wizard-card-back-button { margin: 0; }
+.wizard-card-action-primary { flex: 1; }
+.wizard-card-intro { font-size: var(--font-large); }
+.wizard-card-body p,
+.wizard-card-body label,
+.wizard-card-body input,
+.wizard-card-body select,
+.wizard-card-body textarea,
+.wizard-card-body button { font-size: var(--font-control); }
+.wizard-card-body small,
+.wizard-card-body .wizard-card-kicker,
+.wizard-card-body .wizard-demo-note { font-size: var(--font-small); }
+.wizard-card-body strong,
+.wizard-card-body button,
+.wizard-card-body input,
+.wizard-card-body select,
+.wizard-card-body textarea,
+.wizard-card-body .wizard-recommend-option strong { font-size: var(--font-large); }
+.wizard-card-body small,
+.wizard-card-body em,
+.wizard-card-body .wizard-recommend-option small { font-size: var(--font-small); }
+.wizard-validation-hint { margin: 12px 0; padding: 10px 12px; border-left: 3px solid var(--amber); border-radius: 8px; background: rgba(240,189,120,.1); color: #f0bd78; font-size: var(--font-small); line-height: 1.4; }
+.wizard-privacy-trigger { display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; padding: 10px 14px; border: 1px solid rgba(240,189,120,.35); border-radius: 999px; background: rgba(240,189,120,.1); color: #f0bd78; cursor: pointer; font-size: var(--font-small); }
+.wizard-privacy-backdrop { position: fixed; inset: 0; z-index: 130; display: flex; justify-content: flex-end; background: rgba(2,9,15,.58); }
+.wizard-privacy-popup { position: relative; width: min(430px, 100%); min-height: 100%; padding: 38px 28px; border-left: 1px solid rgba(240,189,120,.35); background: linear-gradient(145deg, #172b35, #091721); box-shadow: -18px 0 60px rgba(0,0,0,.4); animation: wizard-slide-in .24s ease-out; }
+.wizard-privacy-close { position: absolute; top: 18px; right: 18px; display: grid; width: 38px; height: 38px; place-items: center; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,.05); color: var(--text); cursor: pointer; }
+.wizard-privacy-icon { display: grid; width: 48px; height: 48px; margin-bottom: 22px; place-items: center; border-radius: 15px; background: rgba(240,189,120,.14); color: #f0bd78; }
+.wizard-privacy-popup h2 { margin: 0 0 14px; font-size: var(--font-large); }
+.wizard-privacy-popup p { margin: 0 0 26px; color: var(--muted); font-size: var(--font-small); line-height: 1.6; }
+.wizard-privacy-popup .wizard-primary-button { width: 100%; }
+@keyframes wizard-slide-in { from { transform: translateX(100%); } to { transform: translateX(0); } }
+.wizard-card-body .wizard-form-label > span { font-size: var(--font-large); }
+.wizard-card-body .wizard-form-label > small { font-size: var(--font-small); }
+.wizard-card-body .wizard-date-grid label { font-size: var(--font-small); }
+.wizard-card-body .wizard-date-grid input,
+.wizard-card-body .wizard-date-grid select { font-size: var(--font-large); }
 
 .wizard-install-backdrop {
   position: fixed;
@@ -85,7 +143,7 @@
 .wizard-install-dialog h2 {
   margin: 0;
   color: #f1f5ec;
-  font-size: clamp(22px, 5vw, 28px);
+  font-size: clamp(25px, 5vw, 32px);
   letter-spacing: -.04em;
   line-height: 1.2;
 }
@@ -93,7 +151,7 @@
 .wizard-install-copy {
   margin: 14px 0 18px;
   color: #b2c2ba;
-  font-size: 14px;
+  font-size: var(--font-large);
   line-height: 1.6;
 }
 
@@ -107,7 +165,7 @@
   border-radius: 13px;
   background: rgba(255, 255, 255, .035);
   color: #a7b8af;
-  font-size: 12px;
+  font-size: var(--font-large);
   line-height: 1.5;
 }
 
@@ -178,6 +236,17 @@ body {
 }
 
 @media (max-width: 820px) {
+  .wizard-app { font-size: var(--font-large); }
+
+  .wizard-app p,
+  .wizard-app label,
+  .wizard-app button,
+  .wizard-app input,
+  .wizard-app select,
+  .wizard-app textarea { font-size: var(--font-control); }
+
+  .wizard-app small { font-size: var(--font-small); }
+
   html,
   body {
     min-width: 320px;
@@ -227,14 +296,14 @@ body {
 
   .wizard-step {
     gap: 6px;
-    font-size: 11px;
+    font-size: var(--font-small);
   }
 
   .wizard-step-dot {
     width: 28px;
     height: 28px;
     flex: none;
-    font-size: 10px;
+    font-size: var(--font-large);
   }
 
   .wizard-step i {
@@ -273,7 +342,7 @@ body {
 
   .wizard-page-intro > div:first-child > p:last-child {
     max-width: 58ch;
-    font-size: 13px;
+    font-size: var(--font-small);
   }
 
   .wizard-region-badge {
@@ -284,11 +353,11 @@ body {
   }
 
   .wizard-region-badge small {
-    font-size: 9px;
+    font-size: var(--font-small);
   }
 
   .wizard-region-badge strong {
-    font-size: 12px;
+    font-size: var(--font-large);
   }
 
   .wizard-workspace {
@@ -354,12 +423,12 @@ body {
   }
 
   .wizard-map-heading strong {
-    font-size: 13px;
+    font-size: var(--font-small);
   }
 
   .wizard-map-heading small {
     max-width: 54vw;
-    font-size: 10px;
+    font-size: var(--font-large);
   }
 
   .wizard-map-tools {
@@ -375,7 +444,7 @@ body {
   }
 
   .wizard-map-tools button small {
-    font-size: 10px;
+    font-size: var(--font-large);
   }
 
   .wizard-map-stage {
@@ -393,7 +462,7 @@ body {
   .wizard-map-top-hud > span {
     gap: 6px;
     padding: 7px 8px;
-    font-size: 8px;
+    font-size: var(--font-small);
     letter-spacing: .06em;
   }
 
@@ -404,11 +473,11 @@ body {
   }
 
   .wizard-map-empty strong {
-    font-size: 14px;
+    font-size: var(--font-large);
   }
 
   .wizard-map-empty p {
-    font-size: 12px;
+    font-size: var(--font-large);
   }
 
   .wizard-map-measure {
@@ -423,15 +492,15 @@ body {
   }
 
   .wizard-map-measure small {
-    font-size: 8px;
+    font-size: var(--font-small);
   }
 
   .wizard-map-measure strong {
-    font-size: 17px;
+    font-size: 19px;
   }
 
   .wizard-map-measure > span > i {
-    font-size: 10px;
+    font-size: var(--font-large);
   }
 
   .wizard-map-measure .wizard-coordinate {
@@ -442,7 +511,7 @@ body {
     bottom: 82px;
     left: 10px;
     max-width: calc(100% - 20px);
-    font-size: 11px;
+    font-size: var(--font-small);
   }
 
   .wizard-map-status {
@@ -453,7 +522,7 @@ body {
 
   .wizard-map-status > span,
   .wizard-map-status small {
-    font-size: 10px;
+    font-size: var(--font-large);
     line-height: 1.45;
   }
 
@@ -464,18 +533,18 @@ body {
   .wizard-card-kicker,
   .wizard-form-label small,
   .wizard-form-block > label > span {
-    font-size: 10px;
+    font-size: var(--font-large);
   }
 
   .wizard-card-body h1 {
-    font-size: clamp(21px, 5.5vw, 27px);
+    font-size: clamp(24px, 6vw, 31px);
     line-height: 1.2;
   }
 
   .wizard-card-intro,
   .wizard-form-label > span,
   .wizard-recommend-option strong {
-    font-size: 13px;
+    font-size: var(--font-small);
     line-height: 1.45;
   }
 
@@ -488,7 +557,7 @@ body {
   .wizard-form-block select,
   .wizard-form-block textarea {
     min-height: 46px;
-    font-size: 16px;
+    font-size: var(--font-large);
   }
 
   .wizard-form-block textarea {
@@ -510,19 +579,19 @@ body {
 
   .wizard-crop-suggestions button {
     min-height: 46px;
-    font-size: 13px;
+    font-size: var(--font-small);
   }
 
   .wizard-crop-suggestions small,
   .wizard-crop-empty {
-    font-size: 11px;
+    font-size: var(--font-small);
   }
 
   .wizard-selected-crops button,
   .wizard-segmented button,
   .wizard-priority-grid button {
     min-height: 44px;
-    font-size: 12px;
+    font-size: var(--font-large);
   }
 
   .wizard-recommend-option {
@@ -531,7 +600,7 @@ body {
   }
 
   .wizard-recommend-option small {
-    font-size: 11px;
+    font-size: var(--font-small);
     line-height: 1.4;
   }
 
@@ -542,7 +611,7 @@ body {
 
   .wizard-date-grid label {
     min-width: 0;
-    font-size: 10px;
+    font-size: var(--font-large);
   }
 
   .wizard-priority-grid {
@@ -562,7 +631,7 @@ body {
   .wizard-demo-note,
   .wizard-form-error,
   .wizard-inline-error {
-    font-size: 11px;
+    font-size: var(--font-small);
     line-height: 1.5;
   }
 
@@ -602,12 +671,12 @@ body {
 
   .wizard-variable small,
   .wizard-variable em {
-    font-size: 10px;
+    font-size: var(--font-large);
     line-height: 1.4;
   }
 
   .wizard-variable strong {
-    font-size: 13px;
+    font-size: var(--font-small);
     line-height: 1.4;
   }
 
@@ -615,13 +684,13 @@ body {
   .wizard-unknowns ul,
   .wizard-unknowns p,
   .wizard-data-footer {
-    font-size: 11px;
+    font-size: var(--font-small);
     line-height: 1.5;
   }
 
   .wizard-crop-result-top > strong,
   .wizard-confidence {
-    font-size: 12px;
+    font-size: var(--font-large);
   }
 
   .wizard-chat-panel {
@@ -639,17 +708,17 @@ body {
   }
 
   .wizard-chat-bubble-copy small {
-    font-size: 9px;
+    font-size: var(--font-small);
   }
 
   .wizard-chat-bubble-copy strong {
-    font-size: 12px;
+    font-size: var(--font-large);
   }
 
   .wizard-map-attribution {
     right: 8px;
     bottom: 7px;
-    font-size: 8px;
+    font-size: var(--font-small);
   }
 
   .wizard-geocode-results {
@@ -661,6 +730,17 @@ body {
 }
 
 @media (max-width: 480px) {
+  .wizard-app { font-size: var(--font-large); }
+
+  .wizard-app p,
+  .wizard-app label,
+  .wizard-app button,
+  .wizard-app input,
+  .wizard-app select,
+  .wizard-app textarea { font-size: var(--font-control); }
+
+  .wizard-app small { font-size: var(--font-small); }
+
   .wizard-main {
     padding-right: 12px;
     padding-left: 12px;
@@ -672,13 +752,13 @@ body {
   }
 
   .wizard-brand strong {
-    font-size: 12px;
+    font-size: var(--font-large);
   }
 
   .wizard-location-pill {
     max-width: 40vw;
     padding: 8px 9px;
-    font-size: 9px;
+    font-size: var(--font-small);
   }
 
   .wizard-install-button {
@@ -698,7 +778,7 @@ body {
 
   .wizard-step {
     gap: 4px;
-    font-size: 10px;
+    font-size: var(--font-large);
   }
 
   .wizard-step-dot {
@@ -728,19 +808,19 @@ body {
   }
 
   .wizard-map-measure small {
-    font-size: 7px;
+    font-size: var(--font-small);
   }
 
   .wizard-map-measure strong {
-    font-size: 15px;
+    font-size: var(--font-small);
   }
 
   .wizard-map-measure > span > i {
-    font-size: 9px;
+    font-size: var(--font-small);
   }
 
   .wizard-map-measure .wizard-coordinate {
-    font-size: 9px;
+    font-size: var(--font-small);
   }
 
   .wizard-date-grid {
@@ -792,4 +872,31 @@ body {
   .wizard-selected-crops button {
     min-height: 44px;
   }
+}
+
+/* Theme typography wins over component and responsive overrides. */
+.wizard-card-body h1,
+.wizard-card-body h2,
+.wizard-card-body h3,
+.wizard-card-body p,
+.wizard-card-body strong,
+.wizard-card-body button,
+.wizard-card-body input,
+.wizard-card-body select,
+.wizard-card-body textarea,
+.wizard-card-body label,
+.wizard-card-body .wizard-form-label > span,
+.wizard-card-body .wizard-date-grid label,
+.wizard-card-body .wizard-priority-grid button,
+.wizard-card-body .wizard-recommend-option strong {
+  font-size: var(--font-large) !important;
+}
+
+.wizard-card-body small,
+.wizard-card-body em,
+.wizard-card-body .wizard-card-kicker,
+.wizard-card-body .wizard-form-label > small,
+.wizard-card-body .wizard-recommend-option small,
+.wizard-card-body .wizard-demo-note {
+  font-size: var(--font-small) !important;
 }

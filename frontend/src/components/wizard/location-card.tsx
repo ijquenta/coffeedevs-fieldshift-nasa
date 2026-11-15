@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { AlertCircle, ArrowRight, Crosshair, LoaderCircle, MapPin, Search, Satellite, Sparkles } from "lucide-react";
+import { AlertCircle, ArrowLeft, ArrowRight, Crosshair, LoaderCircle, MapPin, Search, Satellite, Sparkles } from "lucide-react";
 import { COUNTRIES, locationService } from "../../data/wizard-locations";
 import { geocode, type GeocodeResult } from "../../services/geocoding";
 import type { FarmLocation } from "../../types/wizard";
 
-export default function LocationCard({ selected, canContinue, onChoose, onContinue }: { selected: FarmLocation | null; canContinue: boolean; onChoose: (location: FarmLocation) => void; onContinue: () => void }) {
+export default function LocationCard({ selected, canContinue, onChoose, onContinue, onBack }: { selected: FarmLocation | null; canContinue: boolean; onChoose: (location: FarmLocation) => void; onContinue: () => void; onBack?: () => void }) {
   const [countryCode, setCountryCode] = useState("BOL");
   const [departmentCode, setDepartmentCode] = useState("");
   const [municipalityCode, setMunicipalityCode] = useState("");
@@ -41,18 +41,17 @@ export default function LocationCard({ selected, canContinue, onChoose, onContin
   };
 
   return <section className="wizard-card-body">
-    <div className="wizard-card-kicker"><span>01</span> · UBICACIÓN Y PARCELA</div>
+    <div className="wizard-card-actions"><button className="wizard-card-back-button" onClick={onBack} disabled={!onBack} aria-label="Atrás"><ArrowLeft size={16} /> Atrás</button><button className="wizard-primary-button wizard-card-action-primary" disabled={!canContinue} onClick={onContinue}>Confirmar parcela <ArrowRight size={16} /></button></div>
     <h1>¿Dónde está tu campo?</h1>
     <p className="wizard-card-intro">Encuentra el terreno para empezar a leer su contexto desde el espacio.</p>
     <div className="wizard-location-search"><Search size={17} aria-hidden="true" /><input aria-label="Buscar calle, municipio o país" placeholder="Calle, municipio o país" value={query} onChange={(event) => { const value = event.target.value; setQuery(value); setResults([]); setError(""); setSearching(value.trim().length >= 3); }} onKeyDown={(event) => { if (event.key === "Escape") setResults([]); }} />{searching && <LoaderCircle className="animate-spin" size={16} />}</div>
     {query.trim().length >= 3 && results.length > 0 && <ul className="wizard-geocode-results" aria-label="Resultados de búsqueda">{results.map((result, index) => <li key={`${result.center.join(":")}-${index}`}><button onClick={() => chooseResult(result)}><MapPin size={15} /><span><strong>{result.label.split(",")[0]}</strong><small>{result.label}</small></span><ArrowRight size={14} /></button></li>)}</ul>}
     <button className="wizard-location-button" onClick={locateMe} disabled={locating}>{locating ? <LoaderCircle className="animate-spin" size={16} /> : <Crosshair size={16} />} {locating ? "Buscando ubicación…" : "Usar mi ubicación"}<span>GPS</span></button>
-    <div className="wizard-or"><span />o elige tu zona<span /></div>
-    <label className="wizard-field"><span>País</span><select value={countryCode} onChange={(event) => { setCountryCode(event.target.value); setDepartmentCode(""); setMunicipalityCode(""); }}>{countries.map((country) => <option key={country.code} value={country.code}>{country.name}</option>)}</select></label>
-    <div className="wizard-field-row"><label className="wizard-field"><span>Departamento</span><select value={departmentCode} onChange={(event) => { setDepartmentCode(event.target.value); setMunicipalityCode(""); }}><option value="">Elige uno</option>{departments.map((department) => <option key={department.pcode} value={department.pcode}>{department.name}</option>)}</select></label><label className="wizard-field"><span>Municipio</span><select value={municipalityCode} onChange={(event) => chooseMunicipality(event.target.value)} disabled={!departmentCode}><option value="">Elige uno</option>{municipalities.map((municipality) => <option key={municipality.pcode} value={municipality.pcode}>{municipality.name}</option>)}</select></label></div>
-    <p className="wizard-demo-note"><Satellite size={13} /> Localidades de muestra · límites ADM con PCODE listos para conectar</p>
-    {error && <div className="wizard-inline-error" role="alert"><AlertCircle size={15} />{error}</div>}
-    {selected && <div className="wizard-selected-location"><span className="wizard-selected-pin"><MapPin size={17} /></span><span><small>UBICACIÓN EN EL MAPA</small><strong>{selected.municipality} · {selected.department}</strong><em>{selected.country}</em></span><Sparkles size={15} /></div>}
-    <button className="wizard-primary-button" disabled={!canContinue} onClick={onContinue}>Confirmar parcela <ArrowRight size={16} /></button>
+     {!selected?.countryCode || selected.countryCode !== "GPS" ? <><div className="wizard-or"><span />o elige tu zona<span /></div>
+     <label className="wizard-field"><span>País</span><select value={countryCode} onChange={(event) => { setCountryCode(event.target.value); setDepartmentCode(""); setMunicipalityCode(""); }}>{countries.map((country) => <option key={country.code} value={country.code}>{country.name}</option>)}</select></label>
+     <div className="wizard-field-row"><label className="wizard-field"><span>Departamento</span><select value={departmentCode} onChange={(event) => { setDepartmentCode(event.target.value); setMunicipalityCode(""); }}><option value="">Elige uno</option>{departments.map((department) => <option key={department.pcode} value={department.pcode}>{department.name}</option>)}</select></label><label className="wizard-field"><span>Municipio</span><select value={municipalityCode} onChange={(event) => chooseMunicipality(event.target.value)} disabled={!departmentCode}><option value="">Elige uno</option>{municipalities.map((municipality) => <option key={municipality.pcode} value={municipality.pcode}>{municipality.name}</option>)}</select></label></div></> : null}
+     {error && <div className="wizard-inline-error" role="alert"><AlertCircle size={15} />{error}</div>}
+     {!selected && <p className="wizard-validation-hint" role="status">Selecciona una ubicación, usa GPS o elige un municipio para continuar.</p>}
+     {selected && <div className="wizard-selected-location"><span className="wizard-selected-pin"><MapPin size={17} /></span><span><strong>{selected.municipality} · {selected.department}</strong><em>{selected.country}</em></span><Sparkles size={15} /></div>}
   </section>;
 }
