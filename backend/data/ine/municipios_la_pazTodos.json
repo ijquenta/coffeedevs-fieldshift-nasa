@@ -1,0 +1,1207 @@
+{
+  "departamento": "La Paz",
+  "total_municipios": 87,
+  "municipios": [
+    {
+      "id": 1,
+      "nombre": "Nuestra Señora de La Paz",
+      "provincia": "Murillo",
+      "piso_ecologico": "Valle Interandino / Altiplano",
+      "latitude": -16.4955,
+      "longitude": -68.1336,
+      "cultivos_principales": [
+        "Papa",
+        "Haba verde",
+        "Lechuga",
+        "Zanahoria"
+      ]
+    },
+    {
+      "id": 2,
+      "nombre": "Palca",
+      "provincia": "Murillo",
+      "piso_ecologico": "Valle Interandino",
+      "latitude": -16.5561,
+      "longitude": -67.9611,
+      "cultivos_principales": [
+        "Maíz choclo",
+        "Papa",
+        "Haba verde",
+        "Zanahoria"
+      ]
+    },
+    {
+      "id": 3,
+      "nombre": "Mecapaca",
+      "provincia": "Murillo",
+      "piso_ecologico": "Valle Interandino",
+      "latitude": -16.6694,
+      "longitude": -68.0192,
+      "cultivos_principales": [
+        "Maíz choclo",
+        "Lechuga",
+        "Alfalfa",
+        "Tomate"
+      ]
+    },
+    {
+      "id": 4,
+      "nombre": "Achocalla",
+      "provincia": "Murillo",
+      "piso_ecologico": "Altiplano / Cabecera de Valle",
+      "latitude": -16.5789,
+      "longitude": -68.1636,
+      "cultivos_principales": [
+        "Papa",
+        "Haba verde",
+        "Cebolla",
+        "Avena berza"
+      ]
+    },
+    {
+      "id": 5,
+      "nombre": "El Alto",
+      "provincia": "Murillo",
+      "piso_ecologico": "Altiplano Central",
+      "latitude": -16.5047,
+      "longitude": -68.1633,
+      "cultivos_principales": [
+        "Papa",
+        "Cebada berza",
+        "Avena berza",
+        "Quinua"
+      ]
+    },
+    {
+      "id": 6,
+      "nombre": "Achacachi",
+      "provincia": "Omasuyos",
+      "piso_ecologico": "Altiplano Norte",
+      "latitude": -16.0442,
+      "longitude": -68.685,
+      "cultivos_principales": [
+        "Papa",
+        "Haba verde",
+        "Cebada en grano",
+        "Avena berza"
+      ]
+    },
+    {
+      "id": 7,
+      "nombre": "Ancoraimes",
+      "provincia": "Omasuyos",
+      "piso_ecologico": "Altiplano Norte",
+      "latitude": -15.9014,
+      "longitude": -68.8981,
+      "cultivos_principales": [
+        "Papa",
+        "Haba verde",
+        "Oca",
+        "Cebada berza"
+      ]
+    },
+    {
+      "id": 8,
+      "nombre": "Chua Cocani",
+      "provincia": "Omasuyos",
+      "piso_ecologico": "Altiplano Norte",
+      "latitude": -16.1958,
+      "longitude": -68.7456,
+      "cultivos_principales": [
+        "Papa",
+        "Haba verde",
+        "Cebolla",
+        "Avena"
+      ]
+    },
+    {
+      "id": 9,
+      "nombre": "Huarina",
+      "provincia": "Omasuyos",
+      "piso_ecologico": "Altiplano Norte",
+      "latitude": -16.1972,
+      "longitude": -68.6042,
+      "cultivos_principales": [
+        "Papa",
+        "Haba verde",
+        "Cebada berza",
+        "Avena"
+      ]
+    },
+    {
+      "id": 10,
+      "nombre": "Santiago de Huata",
+      "provincia": "Omasuyos",
+      "piso_ecologico": "Altiplano Norte",
+      "latitude": -16.0544,
+      "longitude": -68.8117,
+      "cultivos_principales": [
+        "Papa",
+        "Haba verde",
+        "Oca",
+        "Cebada en grano"
+      ]
+    },
+    {
+      "id": 11,
+      "nombre": "Huatajata",
+      "provincia": "Omasuyos",
+      "piso_ecologico": "Altiplano Norte",
+      "latitude": -16.2053,
+      "longitude": -68.6989,
+      "cultivos_principales": [
+        "Papa",
+        "Haba verde",
+        "Cebolla",
+        "Alfalfa"
+      ]
+    },
+    {
+      "id": 12,
+      "nombre": "Coro Coro",
+      "provincia": "Pacajes",
+      "piso_ecologico": "Altiplano Central",
+      "latitude": -17.1722,
+      "longitude": -68.4508,
+      "cultivos_principales": [
+        "Papa",
+        "Quinua",
+        "Cebada berza",
+        "Cañahua"
+      ]
+    },
+    {
+      "id": 13,
+      "nombre": "Caquiaviri",
+      "provincia": "Pacajes",
+      "piso_ecologico": "Altiplano Central",
+      "latitude": -17.0267,
+      "longitude": -68.6231,
+      "cultivos_principales": [
+        "Papa",
+        "Quinua",
+        "Cebada berza",
+        "Avena"
+      ]
+    },
+    {
+      "id": 14,
+      "nombre": "Calacoto",
+      "provincia": "Pacajes",
+      "piso_ecologico": "Altiplano Sur",
+      "latitude": -17.2811,
+      "longitude": -68.6347,
+      "cultivos_principales": [
+        "Quinua",
+        "Papa",
+        "Cebada berza"
+      ]
+    },
+    {
+      "id": 15,
+      "nombre": "Comanche",
+      "provincia": "Pacajes",
+      "piso_ecologico": "Altiplano Central",
+      "latitude": -16.9608,
+      "longitude": -68.4239,
+      "cultivos_principales": [
+        "Papa",
+        "Quinua",
+        "Cebada en grano",
+        "Avena"
+      ]
+    },
+    {
+      "id": 16,
+      "nombre": "Charaña",
+      "provincia": "Pacajes",
+      "piso_ecologico": "Altiplano Sur",
+      "latitude": -17.5931,
+      "longitude": -69.4422,
+      "cultivos_principales": [
+        "Quinua",
+        "Papa",
+        "Cebada berza"
+      ]
+    },
+    {
+      "id": 17,
+      "nombre": "Waldo Ballivián",
+      "provincia": "Pacajes",
+      "piso_ecologico": "Altiplano Central",
+      "latitude": -17.1319,
+      "longitude": -68.3083,
+      "cultivos_principales": [
+        "Papa",
+        "Quinua",
+        "Cebada berza"
+      ]
+    },
+    {
+      "id": 18,
+      "nombre": "Nazacara de Pacajes",
+      "provincia": "Pacajes",
+      "piso_ecologico": "Altiplano Central",
+      "latitude": -16.9214,
+      "longitude": -68.7658,
+      "cultivos_principales": [
+        "Papa",
+        "Quinua",
+        "Cebada berza"
+      ]
+    },
+    {
+      "id": 19,
+      "nombre": "Callapa",
+      "provincia": "Pacajes",
+      "piso_ecologico": "Altiplano Central",
+      "latitude": -17.4569,
+      "longitude": -68.3164,
+      "cultivos_principales": [
+        "Papa",
+        "Quinua",
+        "Cebada en grano"
+      ]
+    },
+    {
+      "id": 20,
+      "nombre": "Puerto Acosta",
+      "provincia": "Eliodoro Camacho",
+      "piso_ecologico": "Altiplano Norte",
+      "latitude": -15.5333,
+      "longitude": -69.25,
+      "cultivos_principales": [
+        "Papa",
+        "Haba verde",
+        "Oca",
+        "Cebada en grano"
+      ]
+    },
+    {
+      "id": 21,
+      "nombre": "Mocomoco",
+      "provincia": "Eliodoro Camacho",
+      "piso_ecologico": "Altiplano Norte / Cabecera de Valle",
+      "latitude": -15.5139,
+      "longitude": -69.0542,
+      "cultivos_principales": [
+        "Papa",
+        "Maíz en grano",
+        "Haba verde",
+        "Oca"
+      ]
+    },
+    {
+      "id": 22,
+      "nombre": "Puerto Carabuco",
+      "provincia": "Eliodoro Camacho",
+      "piso_ecologico": "Altiplano Norte",
+      "latitude": -15.7744,
+      "longitude": -69.0647,
+      "cultivos_principales": [
+        "Papa",
+        "Haba verde",
+        "Oca",
+        "Cebada berza"
+      ]
+    },
+    {
+      "id": 23,
+      "nombre": "Humanata",
+      "provincia": "Eliodoro Camacho",
+      "piso_ecologico": "Altiplano Norte",
+      "latitude": -15.4375,
+      "longitude": -69.1603,
+      "cultivos_principales": [
+        "Papa",
+        "Oca",
+        "Haba verde",
+        "Cebada berza"
+      ]
+    },
+    {
+      "id": 24,
+      "nombre": "Escoma",
+      "provincia": "Eliodoro Camacho",
+      "piso_ecologico": "Altiplano Norte",
+      "latitude": -15.6611,
+      "longitude": -69.1269,
+      "cultivos_principales": [
+        "Papa",
+        "Haba verde",
+        "Cebada en grano",
+        "Avena"
+      ]
+    },
+    {
+      "id": 25,
+      "nombre": "Chuma",
+      "provincia": "Muñecas",
+      "piso_ecologico": "Valle Interandino",
+      "latitude": -15.4258,
+      "longitude": -68.9389,
+      "cultivos_principales": [
+        "Maíz en grano",
+        "Papa",
+        "Haba verde",
+        "Arveja"
+      ]
+    },
+    {
+      "id": 26,
+      "nombre": "Ayata",
+      "provincia": "Muñecas",
+      "piso_ecologico": "Valle Interandino",
+      "latitude": -15.3358,
+      "longitude": -68.7981,
+      "cultivos_principales": [
+        "Maíz en grano",
+        "Papa",
+        "Haba verde",
+        "Oca"
+      ]
+    },
+    {
+      "id": 27,
+      "nombre": "Aucapata",
+      "provincia": "Muñecas",
+      "piso_ecologico": "Valle Interandino",
+      "latitude": -15.3214,
+      "longitude": -68.7042,
+      "cultivos_principales": [
+        "Maíz en grano",
+        "Papa",
+        "Arveja",
+        "Haba verde"
+      ]
+    },
+    {
+      "id": 28,
+      "nombre": "Sorata",
+      "provincia": "Larecaja",
+      "piso_ecologico": "Valle Interandino",
+      "latitude": -15.7731,
+      "longitude": -68.6492,
+      "cultivos_principales": [
+        "Maíz en grano",
+        "Papa",
+        "Haba verde",
+        "Arveja"
+      ]
+    },
+    {
+      "id": 29,
+      "nombre": "Guanay",
+      "provincia": "Larecaja",
+      "piso_ecologico": "Yungas / Amazonía",
+      "latitude": -15.4978,
+      "longitude": -67.8789,
+      "cultivos_principales": [
+        "Arroz con cáscara",
+        "Banano",
+        "Cacao",
+        "Yuca"
+      ]
+    },
+    {
+      "id": 30,
+      "nombre": "Tacacoma",
+      "provincia": "Larecaja",
+      "piso_ecologico": "Valle Interandino",
+      "latitude": -15.5878,
+      "longitude": -68.7208,
+      "cultivos_principales": [
+        "Maíz en grano",
+        "Papa",
+        "Haba verde"
+      ]
+    },
+    {
+      "id": 31,
+      "nombre": "Quiabaya",
+      "provincia": "Larecaja",
+      "piso_ecologico": "Valle Interandino",
+      "latitude": -15.6361,
+      "longitude": -68.6975,
+      "cultivos_principales": [
+        "Maíz en grano",
+        "Papa",
+        "Arveja"
+      ]
+    },
+    {
+      "id": 32,
+      "nombre": "Combaya",
+      "provincia": "Larecaja",
+      "piso_ecologico": "Valle Interandino",
+      "latitude": -15.7925,
+      "longitude": -68.7656,
+      "cultivos_principales": [
+        "Maíz en grano",
+        "Papa",
+        "Haba verde"
+      ]
+    },
+    {
+      "id": 33,
+      "nombre": "Tipuani",
+      "provincia": "Larecaja",
+      "piso_ecologico": "Yungas / Amazonía",
+      "latitude": -15.5514,
+      "longitude": -68.0067,
+      "cultivos_principales": [
+        "Banano",
+        "Yuca",
+        "Cítricos"
+      ]
+    },
+    {
+      "id": 34,
+      "nombre": "Mapiri",
+      "provincia": "Larecaja",
+      "piso_ecologico": "Yungas / Amazonía",
+      "latitude": -15.3097,
+      "longitude": -68.2256,
+      "cultivos_principales": [
+        "Arroz con cáscara",
+        "Café",
+        "Banano",
+        "Yuca"
+      ]
+    },
+    {
+      "id": 35,
+      "nombre": "Teoponte",
+      "provincia": "Larecaja",
+      "piso_ecologico": "Yungas / Amazonía",
+      "latitude": -15.4944,
+      "longitude": -67.6514,
+      "cultivos_principales": [
+        "Arroz con cáscara",
+        "Cacao",
+        "Banano",
+        "Yuca"
+      ]
+    },
+    {
+      "id": 36,
+      "nombre": "Apolo",
+      "provincia": "Franz Tamayo",
+      "piso_ecologico": "Yungas / Amazonía",
+      "latitude": -14.7167,
+      "longitude": -68.4167,
+      "cultivos_principales": [
+        "Café",
+        "Maíz en grano",
+        "Yuca",
+        "Arroz con cáscara"
+      ]
+    },
+    {
+      "id": 37,
+      "nombre": "Pelechuco",
+      "provincia": "Franz Tamayo",
+      "piso_ecologico": "Altiplano Norte / Cabecera de Valle",
+      "latitude": -14.8189,
+      "longitude": -69.0706,
+      "cultivos_principales": [
+        "Papa",
+        "Oca",
+        "Haba verde",
+        "Cebada berza"
+      ]
+    },
+    {
+      "id": 38,
+      "nombre": "Viacha",
+      "provincia": "Ingavi",
+      "piso_ecologico": "Altiplano Central",
+      "latitude": -16.6531,
+      "longitude": -68.3019,
+      "cultivos_principales": [
+        "Papa",
+        "Quinua",
+        "Cebada berza",
+        "Alfalfa"
+      ]
+    },
+    {
+      "id": 39,
+      "nombre": "Guaqui",
+      "provincia": "Ingavi",
+      "piso_ecologico": "Altiplano Norte",
+      "latitude": -16.5936,
+      "longitude": -68.8475,
+      "cultivos_principales": [
+        "Papa",
+        "Haba verde",
+        "Cebada en grano",
+        "Avena"
+      ]
+    },
+    {
+      "id": 40,
+      "nombre": "Tiahuanacu",
+      "provincia": "Ingavi",
+      "piso_ecologico": "Altiplano Norte",
+      "latitude": -16.5542,
+      "longitude": -68.6736,
+      "cultivos_principales": [
+        "Papa",
+        "Haba verde",
+        "Cebada berza",
+        "Avena"
+      ]
+    },
+    {
+      "id": 41,
+      "nombre": "Desaguadero",
+      "provincia": "Ingavi",
+      "piso_ecologico": "Altiplano Norte",
+      "latitude": -16.5656,
+      "longitude": -69.0358,
+      "cultivos_principales": [
+        "Papa",
+        "Haba verde",
+        "Cebada en grano",
+        "Quinua"
+      ]
+    },
+    {
+      "id": 42,
+      "nombre": "San Andrés de Machaca",
+      "provincia": "Ingavi",
+      "piso_ecologico": "Altiplano Central",
+      "latitude": -16.9994,
+      "longitude": -68.9606,
+      "cultivos_principales": [
+        "Quinua",
+        "Papa",
+        "Cebada berza",
+        "Cañahua"
+      ]
+    },
+    {
+      "id": 43,
+      "nombre": "Jesús de Machaca",
+      "provincia": "Ingavi",
+      "piso_ecologico": "Altiplano Central",
+      "latitude": -16.7469,
+      "longitude": -68.8139,
+      "cultivos_principales": [
+        "Papa",
+        "Quinua",
+        "Cebada berza",
+        "Avena"
+      ]
+    },
+    {
+      "id": 44,
+      "nombre": "Taraco",
+      "provincia": "Ingavi",
+      "piso_ecologico": "Altiplano Norte",
+      "latitude": -16.4733,
+      "longitude": -68.8386,
+      "cultivos_principales": [
+        "Papa",
+        "Haba verde",
+        "Cebada en grano",
+        "Alfalfa"
+      ]
+    },
+    {
+      "id": 45,
+      "nombre": "Luribay",
+      "provincia": "Loayza",
+      "piso_ecologico": "Valle Interandino",
+      "latitude": -17.0611,
+      "longitude": -67.665,
+      "cultivos_principales": [
+        "Maíz en grano",
+        "Haba verde",
+        "Uva",
+        "Durazno"
+      ]
+    },
+    {
+      "id": 46,
+      "nombre": "Sapahaqui",
+      "provincia": "Loayza",
+      "piso_ecologico": "Valle Interandino",
+      "latitude": -16.8672,
+      "longitude": -67.9581,
+      "cultivos_principales": [
+        "Maíz choclo",
+        "Papa",
+        "Haba verde",
+        "Pera"
+      ]
+    },
+    {
+      "id": 47,
+      "nombre": "Yaco",
+      "provincia": "Loayza",
+      "piso_ecologico": "Altiplano Central / Cabecera de Valle",
+      "latitude": -17.1614,
+      "longitude": -67.4053,
+      "cultivos_principales": [
+        "Papa",
+        "Haba verde",
+        "Cebada en grano",
+        "Oca"
+      ]
+    },
+    {
+      "id": 48,
+      "nombre": "Malla",
+      "provincia": "Loayza",
+      "piso_ecologico": "Valle Interandino",
+      "latitude": -17.0819,
+      "longitude": -67.4858,
+      "cultivos_principales": [
+        "Papa",
+        "Maíz en grano",
+        "Haba verde",
+        "Arveja"
+      ]
+    },
+    {
+      "id": 49,
+      "nombre": "Cairoma",
+      "provincia": "Loayza",
+      "piso_ecologico": "Valle Interandino",
+      "latitude": -16.9686,
+      "longitude": -67.4453,
+      "cultivos_principales": [
+        "Papa",
+        "Maíz en grano",
+        "Haba verde",
+        "Tomate"
+      ]
+    },
+    {
+      "id": 50,
+      "nombre": "Inquisivi",
+      "provincia": "Inquisivi",
+      "piso_ecologico": "Valle Interandino",
+      "latitude": -16.9069,
+      "longitude": -67.1436,
+      "cultivos_principales": [
+        "Maíz en grano",
+        "Papa",
+        "Haba verde",
+        "Trigo"
+      ]
+    },
+    {
+      "id": 51,
+      "nombre": "Quime",
+      "provincia": "Inquisivi",
+      "piso_ecologico": "Valle Interandino",
+      "latitude": -16.9822,
+      "longitude": -67.2186,
+      "cultivos_principales": [
+        "Papa",
+        "Maíz en grano",
+        "Haba verde",
+        "Arveja"
+      ]
+    },
+    {
+      "id": 52,
+      "nombre": "Cajuata",
+      "provincia": "Inquisivi",
+      "piso_ecologico": "Yungas / Amazonía",
+      "latitude": -16.6961,
+      "longitude": -67.1725,
+      "cultivos_principales": [
+        "Naranja",
+        "Mandarina",
+        "Plátano",
+        "Café"
+      ]
+    },
+    {
+      "id": 53,
+      "nombre": "Colquiri",
+      "provincia": "Inquisivi",
+      "piso_ecologico": "Altiplano Central",
+      "latitude": -17.3908,
+      "longitude": -67.1267,
+      "cultivos_principales": [
+        "Papa",
+        "Cebada berza",
+        "Avena",
+        "Oca"
+      ]
+    },
+    {
+      "id": 54,
+      "nombre": "Ichoca",
+      "provincia": "Inquisivi",
+      "piso_ecologico": "Altiplano / Cabecera de Valle",
+      "latitude": -17.1528,
+      "longitude": -67.2417,
+      "cultivos_principales": [
+        "Papa",
+        "Haba verde",
+        "Cebada en grano"
+      ]
+    },
+    {
+      "id": 55,
+      "nombre": "Villa Libertad Licoma",
+      "provincia": "Inquisivi",
+      "piso_ecologico": "Yungas / Amazonía",
+      "latitude": -16.8042,
+      "longitude": -67.2044,
+      "cultivos_principales": [
+        "Naranja",
+        "Café",
+        "Plátano"
+      ]
+    },
+    {
+      "id": 56,
+      "nombre": "Chulumani",
+      "provincia": "Sud Yungas",
+      "piso_ecologico": "Yungas / Amazonía",
+      "latitude": -16.4097,
+      "longitude": -67.5269,
+      "cultivos_principales": [
+        "Café",
+        "Naranja",
+        "Plátano",
+        "Manga"
+      ]
+    },
+    {
+      "id": 57,
+      "nombre": "Irupana",
+      "provincia": "Sud Yungas",
+      "piso_ecologico": "Yungas / Amazonía",
+      "latitude": -16.4731,
+      "longitude": -67.4481,
+      "cultivos_principales": [
+        "Café",
+        "Cítricos",
+        "Plátano",
+        "Yuca"
+      ]
+    },
+    {
+      "id": 58,
+      "nombre": "Yanacachi",
+      "provincia": "Sud Yungas",
+      "piso_ecologico": "Yungas / Amazonía",
+      "latitude": -16.3983,
+      "longitude": -67.7436,
+      "cultivos_principales": [
+        "Café",
+        "Palta",
+        "Plátano"
+      ]
+    },
+    {
+      "id": 59,
+      "nombre": "Palos Blancos",
+      "provincia": "Sud Yungas",
+      "piso_ecologico": "Yungas / Amazonía",
+      "latitude": -15.5833,
+      "longitude": -67.25,
+      "cultivos_principales": [
+        "Cacao",
+        "Banano",
+        "Arroz con cáscara",
+        "Papaya"
+      ]
+    },
+    {
+      "id": 60,
+      "nombre": "La Asunta",
+      "provincia": "Sud Yungas",
+      "piso_ecologico": "Yungas / Amazonía",
+      "latitude": -16.1264,
+      "longitude": -67.1969,
+      "cultivos_principales": [
+        "Café",
+        "Plátano",
+        "Yuca",
+        "Cítricos"
+      ]
+    },
+    {
+      "id": 61,
+      "nombre": "Pucarani",
+      "provincia": "Los Andes",
+      "piso_ecologico": "Altiplano Norte",
+      "latitude": -16.3986,
+      "longitude": -68.4778,
+      "cultivos_principales": [
+        "Papa",
+        "Cebada berza",
+        "Avena berza",
+        "Alfalfa"
+      ]
+    },
+    {
+      "id": 62,
+      "nombre": "Laja",
+      "provincia": "Los Andes",
+      "piso_ecologico": "Altiplano Central",
+      "latitude": -16.5397,
+      "longitude": -68.3847,
+      "cultivos_principales": [
+        "Papa",
+        "Cebada berza",
+        "Avena berza",
+        "Quinua"
+      ]
+    },
+    {
+      "id": 63,
+      "nombre": "Batallas",
+      "provincia": "Los Andes",
+      "piso_ecologico": "Altiplano Norte",
+      "latitude": -16.2981,
+      "longitude": -68.5319,
+      "cultivos_principales": [
+        "Papa",
+        "Haba verde",
+        "Quinua",
+        "Avena berza"
+      ]
+    },
+    {
+      "id": 64,
+      "nombre": "Puerto Pérez",
+      "provincia": "Los Andes",
+      "piso_ecologico": "Altiplano Norte",
+      "latitude": -16.2842,
+      "longitude": -68.6019,
+      "cultivos_principales": [
+        "Papa",
+        "Haba verde",
+        "Cebada en grano",
+        "Avena"
+      ]
+    },
+    {
+      "id": 65,
+      "nombre": "Sica Sica",
+      "provincia": "Aroma",
+      "piso_ecologico": "Altiplano Central",
+      "latitude": -17.3333,
+      "longitude": -67.7333,
+      "cultivos_principales": [
+        "Papa",
+        "Quinua",
+        "Cebada berza",
+        "Alfalfa"
+      ]
+    },
+    {
+      "id": 66,
+      "nombre": "Umala",
+      "provincia": "Aroma",
+      "piso_ecologico": "Altiplano Central",
+      "latitude": -17.1636,
+      "longitude": -68.0278,
+      "cultivos_principales": [
+        "Papa",
+        "Quinua",
+        "Cebada en grano",
+        "Alfalfa"
+      ]
+    },
+    {
+      "id": 67,
+      "nombre": "Ayo Ayo",
+      "provincia": "Aroma",
+      "piso_ecologico": "Altiplano Central",
+      "latitude": -17.0931,
+      "longitude": -68.0075,
+      "cultivos_principales": [
+        "Papa",
+        "Quinua",
+        "Cebada berza",
+        "Avena"
+      ]
+    },
+    {
+      "id": 68,
+      "nombre": "Calamarca",
+      "provincia": "Aroma",
+      "piso_ecologico": "Altiplano Central",
+      "latitude": -16.9044,
+      "longitude": -68.1172,
+      "cultivos_principales": [
+        "Papa",
+        "Cebada berza",
+        "Avena berza",
+        "Quinua"
+      ]
+    },
+    {
+      "id": 69,
+      "nombre": "Patacamaya",
+      "provincia": "Aroma",
+      "piso_ecologico": "Altiplano Central",
+      "latitude": -17.2361,
+      "longitude": -67.9211,
+      "cultivos_principales": [
+        "Papa",
+        "Quinua",
+        "Cebada en grano",
+        "Alfalfa"
+      ]
+    },
+    {
+      "id": 70,
+      "nombre": "Colquencha",
+      "provincia": "Aroma",
+      "piso_ecologico": "Altiplano Central",
+      "latitude": -16.9353,
+      "longitude": -68.2508,
+      "cultivos_principales": [
+        "Papa",
+        "Quinua",
+        "Cebada berza",
+        "Avena"
+      ]
+    },
+    {
+      "id": 71,
+      "nombre": "Collana",
+      "provincia": "Aroma",
+      "piso_ecologico": "Altiplano Central",
+      "latitude": -16.9019,
+      "longitude": -68.2839,
+      "cultivos_principales": [
+        "Papa",
+        "Quinua",
+        "Cebada berza"
+      ]
+    },
+    {
+      "id": 72,
+      "nombre": "Coroico",
+      "provincia": "Nor Yungas",
+      "piso_ecologico": "Yungas / Amazonía",
+      "latitude": -16.1889,
+      "longitude": -67.7272,
+      "cultivos_principales": [
+        "Café",
+        "Naranja",
+        "Mandarina",
+        "Plátano"
+      ]
+    },
+    {
+      "id": 73,
+      "nombre": "Coripata",
+      "provincia": "Nor Yungas",
+      "piso_ecologico": "Yungas / Amazonía",
+      "latitude": -16.3056,
+      "longitude": -67.6014,
+      "cultivos_principales": [
+        "Café",
+        "Naranja",
+        "Plátano",
+        "Yuca"
+      ]
+    },
+    {
+      "id": 74,
+      "nombre": "Ixiamas",
+      "provincia": "Abel Iturralde",
+      "piso_ecologico": "Yungas / Amazonía",
+      "latitude": -13.7667,
+      "longitude": -68.1333,
+      "cultivos_principales": [
+        "Arroz con cáscara",
+        "Maíz en grano",
+        "Yuca",
+        "Plátano"
+      ]
+    },
+    {
+      "id": 75,
+      "nombre": "San Buenaventura",
+      "provincia": "Abel Iturralde",
+      "piso_ecologico": "Yungas / Amazonía",
+      "latitude": -14.4361,
+      "longitude": -67.5375,
+      "cultivos_principales": [
+        "Caña de azúcar",
+        "Arroz con cáscara",
+        "Banano",
+        "Yuca"
+      ]
+    },
+    {
+      "id": 76,
+      "nombre": "Charazani",
+      "provincia": "Bautista Saavedra",
+      "piso_ecologico": "Valle Interandino / Cabecera de Valle",
+      "latitude": -15.1764,
+      "longitude": -68.9889,
+      "cultivos_principales": [
+        "Papa",
+        "Maíz en grano",
+        "Oca",
+        "Haba verde"
+      ]
+    },
+    {
+      "id": 77,
+      "nombre": "Curva",
+      "provincia": "Bautista Saavedra",
+      "piso_ecologico": "Valle Interandino / Cabecera de Valle",
+      "latitude": -15.1269,
+      "longitude": -69.0358,
+      "cultivos_principales": [
+        "Papa",
+        "Oca",
+        "Maíz en grano",
+        "Haba verde"
+      ]
+    },
+    {
+      "id": 78,
+      "nombre": "Copacabana",
+      "provincia": "Manco Kapac",
+      "piso_ecologico": "Altiplano Norte",
+      "latitude": -16.1667,
+      "longitude": -69.0856,
+      "cultivos_principales": [
+        "Papa",
+        "Haba verde",
+        "Oca",
+        "Cebada en grano"
+      ]
+    },
+    {
+      "id": 79,
+      "nombre": "San Pedro de Tiquina",
+      "provincia": "Manco Kapac",
+      "piso_ecologico": "Altiplano Norte",
+      "latitude": -16.2244,
+      "longitude": -68.8475,
+      "cultivos_principales": [
+        "Papa",
+        "Haba verde",
+        "Cebolla",
+        "Avena"
+      ]
+    },
+    {
+      "id": 80,
+      "nombre": "Tito Yupanqui",
+      "provincia": "Manco Kapac",
+      "piso_ecologico": "Altiplano Norte",
+      "latitude": -16.195,
+      "longitude": -68.9583,
+      "cultivos_principales": [
+        "Papa",
+        "Haba verde",
+        "Cebada en grano"
+      ]
+    },
+    {
+      "id": 81,
+      "nombre": "San Pedro de Curahuara",
+      "provincia": "Gualberto Villarroel",
+      "piso_ecologico": "Altiplano Central",
+      "latitude": -17.6569,
+      "longitude": -68.0461,
+      "cultivos_principales": [
+        "Quinua",
+        "Papa",
+        "Cebada berza",
+        "Cañahua"
+      ]
+    },
+    {
+      "id": 82,
+      "nombre": "Papel Pampa",
+      "provincia": "Gualberto Villarroel",
+      "piso_ecologico": "Altiplano Central",
+      "latitude": -17.6383,
+      "longitude": -67.8528,
+      "cultivos_principales": [
+        "Quinua",
+        "Papa",
+        "Cebada berza"
+      ]
+    },
+    {
+      "id": 83,
+      "nombre": "Chacarilla",
+      "provincia": "Gualberto Villarroel",
+      "piso_ecologico": "Altiplano Central",
+      "latitude": -17.5653,
+      "longitude": -68.2219,
+      "cultivos_principales": [
+        "Quinua",
+        "Papa",
+        "Cebada en grano"
+      ]
+    },
+    {
+      "id": 84,
+      "nombre": "Santiago de Machaca",
+      "provincia": "José Manuel Pando",
+      "piso_ecologico": "Altiplano Central",
+      "latitude": -17.0653,
+      "longitude": -69.1986,
+      "cultivos_principales": [
+        "Quinua",
+        "Papa",
+        "Cebada berza",
+        "Cañahua"
+      ]
+    },
+    {
+      "id": 85,
+      "nombre": "Catacora",
+      "provincia": "José Manuel Pando",
+      "piso_ecologico": "Altiplano Sur",
+      "latitude": -17.1636,
+      "longitude": -69.4761,
+      "cultivos_principales": [
+        "Quinua",
+        "Papa",
+        "Cebada berza"
+      ]
+    },
+    {
+      "id": 86,
+      "nombre": "Caranavi",
+      "provincia": "Caranavi",
+      "piso_ecologico": "Yungas / Amazonía",
+      "latitude": -15.8333,
+      "longitude": -67.5667,
+      "cultivos_principales": [
+        "Café",
+        "Naranja",
+        "Mandarina",
+        "Plátano"
+      ]
+    },
+    {
+      "id": 87,
+      "nombre": "Alto Beni",
+      "provincia": "Caranavi",
+      "piso_ecologico": "Yungas / Amazonía",
+      "latitude": -15.5681,
+      "longitude": -67.3506,
+      "cultivos_principales": [
+        "Cacao",
+        "Banano",
+        "Naranja",
+        "Papaya"
+      ]
+    }
+  ]
+}
