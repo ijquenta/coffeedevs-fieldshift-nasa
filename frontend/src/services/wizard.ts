@@ -2,7 +2,7 @@ import type { AlertItem, ChatRequest, Confidence, CropProbability, DiagnosisResp
 
 const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK !== "false";
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "");
-const CROPS = ["Quinua", "Papa", "Haba", "Cebada", "Avena", "Alfalfa", "Maíz"];
+const CROPS = ["Quinua", "Papa", "Haba", "Maíz", "Cebada", "Avena", "Alfalfa", "Tarwi", "Amaranto", "Cañahua", "Oca", "Papalisa", "Arveja", "Trigo", "Frijol", "Lenteja"];
 
 function seedFor(request: WizardRequest) {
   const [lng, lat] = request.centroide;

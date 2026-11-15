@@ -3,6 +3,7 @@
 import { ArrowLeft, Check, Leaf, Satellite } from "lucide-react";
 import Link from "next/link";
 import { useWizard } from "./wizard-store";
+import PwaControls from "./pwa-controls";
 
 const labels = ["Ubicación", "Planes", "Resultados"];
 export default function WizardHeader() {
@@ -13,6 +14,6 @@ export default function WizardHeader() {
     <div className="wizard-stepper" aria-label={`Paso ${step} de 3`}>
       {labels.map((label, index) => { const itemStep = index + 1; const done = step > itemStep; return <div className={`wizard-step ${step === itemStep ? "is-current" : ""} ${done ? "is-done" : ""}`} key={label}><span className="wizard-step-dot">{done ? <Check size={13} /> : `0${itemStep}`}</span><span>{label}</span>{itemStep < 3 && <i />}</div>; })}
     </div>
-    {step > 1 ? <button className="wizard-back-button" onClick={() => setStep((step - 1) as 1 | 2)}><ArrowLeft size={15} /> Atrás</button> : <div className="wizard-location-pill"><i />{location ? `${location.municipality} · ${location.country}` : "TU PARCELA, EN CONTEXTO"}</div>}
+    <div className="wizard-header-actions"><PwaControls />{step > 1 ? <button className="wizard-back-button" onClick={() => setStep((step - 1) as 1 | 2)}><ArrowLeft size={15} /> Atrás</button> : <div className="wizard-location-pill"><i />{location ? `${location.municipality} · ${location.country}` : "TU PARCELA, EN CONTEXTO"}</div>}</div>
   </header>;
 }
