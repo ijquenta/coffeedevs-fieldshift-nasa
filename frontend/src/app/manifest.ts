@@ -3,8 +3,8 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/",
-    name: "Yapana Agro · NASA Space Apps",
-    short_name: "Yapana Agro",
+    name: "Yanapiri Agro · NASA Space Apps",
+    short_name: "Yanapiri Agro",
     description: "Explora tu parcela y planifica cultivos con señales de observación de la Tierra.",
     start_url: "/",
     scope: "/",

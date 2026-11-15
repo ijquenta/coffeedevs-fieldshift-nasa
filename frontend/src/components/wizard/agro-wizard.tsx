@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AlertCircle, ArrowRight, Check, CheckCircle2, ChevronDown, CircleHelp, Compass, LoaderCircle, MapPin, Minus, Plus, RotateCcw, Ruler, Satellite, Sparkles } from "lucide-react";
+import { AlertCircle, ArrowRight, Check, CheckCircle2, ChevronDown, CircleHelp, Compass, Info, LoaderCircle, MapPin, Minus, Plus, RotateCcw, Ruler, Satellite, Sparkles, X } from "lucide-react";
 import WizardHeader from "./wizard-header";
 import LocationCard from "./location-card";
 import PlanCard from "./plan-card";
@@ -24,7 +24,9 @@ function WizardContent() {
   const state = useWizard();
   const { step, setStep, location, setLocation, polygon, setPolygon, mapMode, setMapMode, products, recommend, plantingMode, plantingFrom, setPlantingFrom, plantingTo, setPlantingTo, flexibleWeeks, priorities, notes, diagnosis, setDiagnosis, suggestions, setSuggestions, setResultTab } = state;
   const [cameraTarget, setCameraTarget] = useState<{ position: Position; altitude: number; key: string } | null>(null);
+  const [cameraMoving, setCameraMoving] = useState(false);
   const [loading, setLoading] = useState(false), [pageError, setPageError] = useState("");
+  const [privacyOpen, setPrivacyOpen] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const points = useMemo(() => polygonPoints(polygon), [polygon]);
   const geometry = useMemo(() => parcelGeometry(points), [points]);
@@ -35,6 +37,7 @@ function WizardContent() {
 
   const chooseLocation = useCallback((next: FarmLocation) => {
     setLocation(next);
+    setCameraMoving(true);
     if (!plantingFrom) {
       const from = new Date();
       const to = new Date(from);
@@ -89,20 +92,19 @@ function WizardContent() {
   return <main className="wizard-app">
     <WizardHeader />
     <div className="wizard-main">
-      <div className="wizard-page-intro"><div><p className="wizard-eyebrow"><span /> DECISIONES AGRÍCOLAS CON DATOS DE LA TIERRA</p><h1>{step === 1 ? <>Tu campo empieza <em>por aquí.</em></> : step === 2 ? <>Una buena cosecha <em>se planea.</em></> : <>Una lectura clara <em>abre caminos.</em></>}</h1><p>{step === 1 ? "Ubica el terreno donde empieza tu próxima decisión." : step === 2 ? "Cuéntanos qué quieres sembrar y qué te gustaría cuidar." : "Explora señales, escenarios y recomendaciones para tu parcela."}</p></div><div className="wizard-region-badge"><MapPin size={17} /><span><small>UBICACIÓN DE TRABAJO</small><strong>{locationLabel}</strong></span><ChevronDown size={15} /></div></div>
+      <div className="wizard-page-intro"><div /></div>
 
       <div className={`wizard-workspace ${step === 3 ? "wizard-workspace-results" : ""}`}>
         <section className="wizard-map-column">
           <div className="wizard-map-card">
-            <div className="wizard-map-toolbar"><div className="wizard-map-heading"><div className="wizard-map-heading-icon"><Satellite size={16} /></div><div><strong>{step === 1 ? "Encuentra tu terreno" : step === 2 ? "Tu parcela sobre el mapa" : "La parcela analizada"}</strong><small>{location ? locationLabel : "El globo está listo para explorar"}</small></div></div>
-              <div className="wizard-map-tools">
+             <div className="wizard-map-toolbar wizard-map-toolbar-empty"><div className="wizard-map-heading" />
+               <div className="wizard-map-tools">
                 {(step === 1 || step === 2) && <><button onClick={() => editMap("draw")} className={mapMode === "draw" ? "active" : ""} disabled={step === 1 && !location} title="Dibujar un nuevo límite"><span>＋</span><small>Dibujar</small></button><button onClick={() => editMap("edit")} className={mapMode === "edit" ? "active" : ""} disabled={points.length < 3} title="Editar los vértices"><Ruler size={14} /><small>Editar</small></button>{mapMode !== "view" && <button onClick={() => setMapMode("view")} title="Terminar edición"><Check size={14} /><small>Listo</small></button>}{points.length > 0 && <button onClick={() => { setPolygon(null); setMapMode("draw"); }} title="Borrar el límite"><RotateCcw size={14} /><small>Borrar</small></button>}</>}
-                {step === 3 && <span className="wizard-map-readonly"><CheckCircle2 size={14} /> PARCELA CONFIRMADA</span>}
               </div>
             </div>
             <div className="wizard-map-stage">
-              <WizardMap points={points} mode={mapMode} cameraTarget={cameraTarget} spin={!location} onChange={(next) => { setPolygon(next.length ? closePolygon(next) : null); setPageError(""); }} />
-              <div className="wizard-map-top-hud"><span><i /> GLOBO DE LA TIERRA · CESIUM</span><span>IMAGEN SATELITAL <span className="wizard-live-dot" /></span></div>
+               <WizardMap points={points} mode={mapMode} cameraTarget={cameraTarget} spin={!location} onCameraMove={setCameraMoving} onChange={(next) => { setPolygon(next.length ? closePolygon(next) : null); setPageError(""); }} />
+              <div className="wizard-map-top-hud"><span><i /> GLOBO DE LA TIERRA · CESIUM</span></div>
               {points.length >= 3 && <div className="wizard-map-measure"><span><small>SUPERFICIE DEL TERRENO</small><strong>{geometry.areaHa.toLocaleString("es-BO", { maximumFractionDigits: 2 })} <em>ha</em></strong><i>{geometry.areaHa < 100 ? `${Math.round(geometry.areaHa * 10_000).toLocaleString("es-BO")} m²` : `${(geometry.areaHa / 100).toFixed(2)} km²`}</i></span><span className="wizard-measure-divider" /><span><small>CENTRO APROXIMADO</small><strong className="wizard-coordinate">{Math.abs(geometry.center[1]).toFixed(4)}° S <i>·</i> {Math.abs(geometry.center[0]).toFixed(4)}° O</strong><i>{points.length} vértices</i></span></div>}
               {!location && <div className="wizard-map-empty"><span><Compass size={20} /></span><strong>Elige tu zona para acercar el globo</strong><p>Busca una dirección o selecciona el país, departamento y municipio.</p></div>}
               {location && mapMode === "draw" && <div className="wizard-map-instruction"><Sparkles size={13} /> Haz clic en el mapa para marcar cada esquina del campo. Pulsa <kbd>Listo</kbd> al terminar.</div>}
@@ -111,29 +113,29 @@ function WizardContent() {
               {step === 3 && diagnosis && suggestions && <FieldChat />}
               <div className="wizard-map-attribution">© Cesium · NASA Earth observations · OpenStreetMap</div>
             </div>
-            <div className={`wizard-map-status ${parcelError && points.length ? "has-error" : ""}`}><span>{parcelError ? <><AlertCircle size={15} />{parcelError}</> : <><CheckCircle2 size={15} />{points.length >= 3 ? "El contorno se ve bien · puedes continuar" : "Dibuja el contorno de tu terreno sobre el globo"}</>}</span><small>Max. {MAX_PARCEL_HA.toLocaleString("es-BO")} ha</small></div>
+             <div className={`wizard-map-status ${parcelError && points.length ? "has-error" : ""}`}><span>{parcelError ? <><AlertCircle size={15} />{parcelError}</> : points.length < 3 ? <>Dibuja el contorno de tu terreno sobre el globo</> : null}</span><small>Max. {MAX_PARCEL_HA.toLocaleString("es-BO")} ha</small></div>
           </div>
 
-          {step === 2 && <div className="wizard-load-row"><div><span><Satellite size={15} /></span><p><strong>Listo para consultar la Tierra</strong><small>Tu parcela y tus prioridades viajan juntas.</small></p></div><button className="wizard-primary-button" disabled={loading} onClick={() => void loadAnalysis()}>{loading ? <><LoaderCircle size={16} className="animate-spin" /> Cargando señales…</> : <>Cargar el análisis <ArrowRight size={16} /></>}</button></div>}
           {step === 1 && <div className="wizard-map-hint"><span><CircleHelp size={15} /></span><p>Al elegir una ubicación marcamos una parcela de referencia de <strong>1,2 ha</strong>. Puedes ajustarla o dibujar tu terreno encima del mapa.</p></div>}
-          {step === 3 && <div className="wizard-privacy-note"><ShieldIcon /><p><strong>La recomendación no es una certeza.</strong> Usa las señales como una guía de conversación con tu técnico agrícola y tus conocimientos del terreno.</p></div>}
+           {step === 3 && <button className="wizard-privacy-trigger" onClick={() => setPrivacyOpen(true)}><Info size={16} /> Ver aviso importante</button>}
         </section>
 
         <aside className={`wizard-side-card ${step === 3 ? "results-side-card" : ""}`}>
-          {step === 1 && <><LocationCard selected={location} canContinue={Boolean(location) && !parcelError} onChoose={chooseLocation} onContinue={goToPlans} />{pageError && <div className="wizard-form-error" role="alert"><AlertCircle size={16} />{pageError}</div>}</>}
-          {step === 2 && <><PlanCard />{pageError && <div className="wizard-form-error" role="alert"><AlertCircle size={16} />{pageError}</div>}</>}
-          {step === 3 && (loading || !diagnosis || !suggestions ? <ResultsSkeleton /> : <ResultsCard />)}
+           {step === 1 && <><LocationCard selected={location} canContinue={Boolean(location) && !parcelError && !cameraMoving} onChoose={chooseLocation} onContinue={goToPlans} onBack={undefined} />{pageError && <div className="wizard-form-error" role="alert"><AlertCircle size={16} />{pageError}</div>}</>}
+           {step === 2 && <><PlanCard onBack={() => { setStep(1); setMapMode("view"); }} onContinue={() => void loadAnalysis()} loading={loading} />{pageError && <div className="wizard-form-error" role="alert"><AlertCircle size={16} />{pageError}</div>}{(productError || dateError) && <div className="wizard-validation-hint" role="status">Completa los campos pendientes antes de cargar el análisis.</div>}</>}
+           {step === 3 && (loading || !diagnosis || !suggestions ? <ResultsSkeleton /> : <ResultsCard onBack={() => { setStep(2); setMapMode("view"); }} />)}
         </aside>
       </div>
 
-          {step === 1 && <div className="wizard-bottom-context"><span><i>✳</i><strong>La primera decisión es mirar.</strong></span><p>Al elegir una ubicación, el mapa propone un contorno editable. Ajusta sus vértices a tu terreno antes de confirmar.</p></div>}
-      {step === 2 && <div className="wizard-step-footer"><button onClick={() => { setStep(1); setMapMode("view"); }}><ArrowRight className="wizard-back-arrow" size={14} /> Volver a ubicación</button><span>Podrás revisar todos tus datos antes de volver atrás.</span></div>}
+      {privacyOpen && <div className="wizard-privacy-backdrop" onClick={() => setPrivacyOpen(false)}><aside className="wizard-privacy-popup" role="dialog" aria-modal="true" aria-labelledby="privacy-title" onClick={(event) => event.stopPropagation()}><button className="wizard-privacy-close" onClick={() => setPrivacyOpen(false)} aria-label="Cerrar aviso"><X size={18} /></button><div className="wizard-privacy-icon"><Info size={20} /></div><h2 id="privacy-title">Aviso importante</h2><p><strong>La recomendación no es una certeza.</strong> Usa las señales como una guía de conversación con tu técnico agrícola y tus conocimientos del terreno.</p><button className="wizard-primary-button" onClick={() => setPrivacyOpen(false)}>Entendido</button></aside></div>}
+
+           {step === 1 && <div className="wizard-bottom-context"><span><i>✳</i><strong>La primera decisión es mirar.</strong></span><p>Al elegir una ubicación, el mapa propone un contorno editable. Ajusta sus vértices a tu terreno antes de confirmar.</p></div>}
     </div>
   </main>;
 }
 
 function ResultsSkeleton() {
-  return <section className="wizard-card-body"><div className="wizard-card-kicker">03 · LECTURA DEL TERRENO</div><h1>Estamos leyendo tu parcela…</h1><p className="wizard-card-intro">Combinamos las señales disponibles con tus planes de siembra.</p><div className="wizard-loading-earth"><div className="wizard-loading-orbit" /><div className="wizard-loading-sphere"><span>◌</span></div><small>CONSULTANDO DATOS DE LA TIERRA</small></div><div className="wizard-skeleton-lines"><i /><i /><i /><i /></div><div className="wizard-skeleton-results">{[0, 1, 2].map((item) => <span key={item}><i /><b /><small /></span>)}</div><p className="wizard-demo-note"><LoaderCircle className="animate-spin" size={13} /> Un momento, preparando el análisis…</p></section>;
+  return <section className="wizard-card-body"><h1>Estamos leyendo tu parcela…</h1><p className="wizard-card-intro">Combinamos las señales disponibles con tus planes de siembra.</p><div className="wizard-loading-earth"><div className="wizard-loading-orbit" /><div className="wizard-loading-sphere"><span>◌</span></div><small>CONSULTANDO DATOS DE LA TIERRA</small></div><div className="wizard-skeleton-lines"><i /><i /><i /><i /></div><div className="wizard-skeleton-results">{[0, 1, 2].map((item) => <span key={item}><i /><b /><small /></span>)}</div><p className="wizard-demo-note"><LoaderCircle className="animate-spin" size={13} /> Un momento, preparando el análisis…</p></section>;
 }
 
 function ShieldIcon() { return <span className="wizard-shield-icon"><CheckCircle2 size={16} /></span>; }

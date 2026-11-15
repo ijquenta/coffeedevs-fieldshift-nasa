@@ -1,6 +1,6 @@
-/* Yapana Agro offline shell. Live analysis and geocoding are never cached. */
-const SHELL_CACHE = "yapana-shell-v2";
-const STATIC_CACHE = "yapana-static-v1";
+/* Yanapiri Agro offline shell. Live analysis and geocoding are never cached. */
+const SHELL_CACHE = "yanapiri-shell-v2";
+const STATIC_CACHE = "yanapiri-static-v1";
 const SHELL_URLS = ["/offline.html", "/icons/icon-192.png", "/icons/icon-512.png", "/icons/icon-maskable-512.png", "/icons/apple-touch-icon.png", "/icons/icon.svg"];
 const STATIC_PREFIXES = ["/_next/static/", "/cesium/"];
 
@@ -19,7 +19,7 @@ self.addEventListener("install", (event) => {
 });
 
 self.addEventListener("activate", (event) => {
-  event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((key) => key.startsWith("yapana-") && ![SHELL_CACHE, STATIC_CACHE].includes(key)).map((key) => caches.delete(key)))).then(() => self.clients.claim()));
+  event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((key) => key.startsWith("yanapiri-") && ![SHELL_CACHE, STATIC_CACHE].includes(key)).map((key) => caches.delete(key)))).then(() => self.clients.claim()));
 });
 
 self.addEventListener("fetch", (event) => {

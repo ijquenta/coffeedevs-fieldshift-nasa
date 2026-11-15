@@ -1,11 +1,11 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
-import { AlertTriangle, ArrowDownRight, ArrowUpRight, CheckCircle2, CircleHelp, CloudRain, Droplets, Leaf, Mountain, Pause, Play, Satellite, ShieldAlert, Snowflake, Sparkles, Sprout, StopCircle, Thermometer, Volume2, Waves } from "lucide-react";
+import { AlertTriangle, ArrowDownRight, ArrowLeft, ArrowUpRight, CheckCircle2, CircleHelp, CloudRain, Droplets, Leaf, Mountain, Pause, Play, Satellite, ShieldAlert, Snowflake, Sparkles, Sprout, StopCircle, Thermometer, Volume2, Waves } from "lucide-react";
 import { useWizard } from "./wizard-store";
 
 const confidenceText = { alta: "Buena señal", media: "Señal parcial", baja: "Pocos datos" };
-export default function ResultsCard() {
+export default function ResultsCard({ onBack }: { onBack: () => void }) {
   const { diagnosis, suggestions, resultTab, setResultTab } = useWizard();
   const [speaking, setSpeaking] = useState(false), [paused, setPaused] = useState(false), [boundary, setBoundary] = useState(0);
   const narration = useMemo(() => diagnosis ? `Para ${diagnosis.metadatos.zona}, estas son posibilidades para explorar. ${diagnosis.probabilidades.slice(0, 3).map((crop) => `${crop.cultivo}, entre ${crop.min} y ${crop.max} por ciento de idoneidad indicativa.`).join(" ")} Revisa las alertas de agua y temperatura, y conversa con una persona técnica local antes de tomar una decisión.` : "", [diagnosis]);
@@ -19,7 +19,7 @@ export default function ResultsCard() {
   };
   const highlightNarration = () => { const end = narration.indexOf(" ", boundary + 1); return <>{narration.slice(0, boundary)}<mark>{narration.slice(boundary, end < 0 ? narration.length : end)}</mark>{narration.slice(end < 0 ? narration.length : end)}</>; };
   return <section className="wizard-card-body wizard-results-card">
-    <div className="wizard-result-heading"><div><div className="wizard-card-kicker"><span>03</span> · LECTURA DEL TERRENO</div><h1>Tu parcela, en perspectiva.</h1><p className="wizard-card-intro">Señales para explorar escenarios posibles; no son certezas de cosecha.</p></div>{diagnosis.metadatos.esDatoDeEjemplo && <span className="wizard-example-tag"><i /> DATOS DE EJEMPLO</span>}</div>
+     <div className="wizard-result-heading"><div className="wizard-card-title-row"><div><h1>Tu parcela, en perspectiva.</h1><p className="wizard-card-intro">Señales para explorar escenarios posibles; no son certezas de cosecha.</p></div><button className="wizard-card-back-button" onClick={onBack} aria-label="Volver a planes"><ArrowLeft size={16} /> Atrás</button></div></div>
     <div className="wizard-result-tabs" role="tablist" aria-label="Vista del análisis"><button role="tab" aria-selected={resultTab === "diagnostico"} className={resultTab === "diagnostico" ? "active" : ""} onClick={() => setResultTab("diagnostico")}><Satellite size={14} /> Diagnóstico</button><button role="tab" aria-selected={resultTab === "sugerencias"} className={resultTab === "sugerencias" ? "active" : ""} onClick={() => setResultTab("sugerencias")}><Sparkles size={14} /> Sugerencias <span>{suggestions.alertas.length}</span></button></div>
 
     {resultTab === "diagnostico" ? <div className="wizard-diagnosis-pane">

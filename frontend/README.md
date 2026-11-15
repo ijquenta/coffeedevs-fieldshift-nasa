@@ -1,4 +1,4 @@
-# Yapana Agro · Wizard de campo
+# Yanapiri Agro · Wizard de campo
 
 Interfaz Next.js para el reto NASA Space Apps Challenge 2026, “Field Shift: Adapting Farms with NASA Data”. La ruta `/` abre directamente el flujo de tres pasos: ubicación y parcela, planes de siembra y resultados.
 

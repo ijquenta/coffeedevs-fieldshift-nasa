@@ -5,7 +5,7 @@ import { CloudRain, Droplets, Leaf, Thermometer, Waves } from "lucide-react";
 import type { Position } from "../../types/wizard";
 import type { MapMode } from "./wizard-store";
 
-interface Props { points: Position[]; mode: MapMode; cameraTarget: { position: Position; altitude?: number; key: string } | null; spin: boolean; onChange: (points: Position[]) => void }
+interface Props { points: Position[]; mode: MapMode; cameraTarget: { position: Position; altitude?: number; key: string } | null; spin: boolean; onChange: (points: Position[]) => void; onCameraMove?: (moving: boolean) => void }
 
 type WeatherLayerId = "rain" | "temperature" | "soil" | "vegetation";
 
@@ -16,7 +16,7 @@ const WEATHER_LAYERS: Record<WeatherLayerId, { label: string; source: string; pr
   vegetation: { label: "Vegetación", source: "NASA VIIRS NOAA-21", product: "VIIRS_NOAA21_NDVI_8Day", cadence: "cada 8 días", icon: Leaf },
 };
 
-export default function WizardMap({ points, mode, cameraTarget, spin, onChange }: Props) {
+export default function WizardMap({ points, mode, cameraTarget, spin, onChange, onCameraMove }: Props) {
   const host = useRef<HTMLDivElement>(null);
   const weatherCanvas = useRef<HTMLCanvasElement>(null);
   const viewerRef = useRef<import("cesium").Viewer | null>(null);
@@ -108,8 +108,12 @@ export default function WizardMap({ points, mode, cameraTarget, spin, onChange }
   useEffect(() => {
     if (!ready || !cameraTarget) return;
     const Cesium = cesiumRef.current, viewer = viewerRef.current; if (!Cesium || !viewer || viewer.isDestroyed()) return;
-    viewer.camera.flyTo({ destination: Cesium.Cartesian3.fromDegrees(cameraTarget.position[0], cameraTarget.position[1], cameraTarget.altitude ?? 4200), duration: 1.6 });
-  }, [cameraTarget, ready]);
+    const stopMoving = () => onCameraMove?.(false);
+    viewer.camera.moveEnd.addEventListener(stopMoving);
+    onCameraMove?.(true);
+    viewer.camera.flyTo({ destination: Cesium.Cartesian3.fromDegrees(cameraTarget.position[0], cameraTarget.position[1], cameraTarget.altitude ?? 4200), duration: 1.6, complete: stopMoving, cancel: stopMoving });
+    return () => { viewer.camera.moveEnd.removeEventListener(stopMoving); };
+  }, [cameraTarget, ready, onCameraMove]);
 
   useEffect(() => {
     const Cesium = cesiumRef.current, viewer = viewerRef.current; if (!ready || !Cesium || !viewer || viewer.isDestroyed()) return;
@@ -129,7 +133,7 @@ export default function WizardMap({ points, mode, cameraTarget, spin, onChange }
     let cancelled = false;
     let animationFrame = 0;
     let lastFrame = 0;
-    const context = canvas.getContext("2d", { alpha: true });
+    let context = canvas.getContext("2d", { alpha: true });
     if (!context) return;
 
     // NASA GIBS serves the georeferenced satellite/model products directly as WMS imagery.
@@ -148,13 +152,37 @@ export default function WizardMap({ points, mode, cameraTarget, spin, onChange }
     viewer.scene.requestRender();
 
     const fitCanvas = () => {
-      const bounds = canvas.getBoundingClientRect(), ratio = Math.min(window.devicePixelRatio || 1, 2);
-      if (!bounds.width || !bounds.height) return;
-      if (canvas.width !== Math.round(bounds.width * ratio) || canvas.height !== Math.round(bounds.height * ratio)) {
-        canvas.width = Math.round(bounds.width * ratio); canvas.height = Math.round(bounds.height * ratio);
+      const bounds = canvas.getBoundingClientRect();
+      if (!Number.isFinite(bounds.width) || !Number.isFinite(bounds.height) || bounds.width <= 0 || bounds.height <= 0) return;
+      const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
+      const maxPixels = 2_000_000;
+      const scale = Math.min(1, Math.sqrt(maxPixels / (bounds.width * bounds.height * ratio * ratio)));
+      const effectiveRatio = ratio * scale;
+      const width = Math.max(1, Math.min(2048, Math.round(bounds.width * effectiveRatio)));
+      const height = Math.max(1, Math.min(2048, Math.round(bounds.height * effectiveRatio)));
+      if (canvas.width !== width || canvas.height !== height) {
+        try {
+          canvas.width = width;
+          canvas.height = height;
+          const nextContext = canvas.getContext("2d", { alpha: true });
+          if (!nextContext) return;
+          context = nextContext;
+        } catch {
+          cancelled = true;
+          return;
+        }
       }
-      context.setTransform(ratio, 0, 0, ratio, 0, 0);
-      return { width: bounds.width, height: bounds.height };
+      try {
+        const activeContext = context;
+        if (!activeContext) return;
+        activeContext.setTransform(effectiveRatio, 0, 0, effectiveRatio, 0, 0);
+      } catch {
+        cancelled = true;
+        return;
+      }
+      const activeContext = context;
+      if (!activeContext) return;
+      return { width: bounds.width, height: bounds.height, context: activeContext };
     };
     const focus = cameraTarget?.position ?? [-63.5, -17.5] as [number, number];
     let seed = Math.abs(Math.round(focus[0] * 10_000 + focus[1] * 100_000)) + 17;
@@ -173,7 +201,7 @@ export default function WizardMap({ points, mode, cameraTarget, spin, onChange }
       if (time - lastFrame < 48) return;
       lastFrame = time;
       const size = fitCanvas(); if (!size) return;
-      context.clearRect(0, 0, size.width, size.height);
+      size.context.clearRect(0, 0, size.width, size.height);
       if (!rainEnabledRef.current || weatherLayer !== "rain" || document.hidden) return;
       for (const particle of particles) {
         // Windy-inspired moving traces: decorative flow only; GPM provides rain, not wind vectors.
@@ -186,11 +214,11 @@ export default function WizardMap({ points, mode, cameraTarget, spin, onChange }
         const head = projected(particle.longitude, particle.latitude);
         const tail = projected(particle.longitude - Math.cos(angle) * particle.length, particle.latitude - Math.sin(angle) * particle.length);
         if (!head || !tail || head.x < -20 || head.y < -20 || head.x > size.width + 20 || head.y > size.height + 20) continue;
-        context.beginPath(); context.moveTo(tail.x, tail.y); context.lineTo(head.x, head.y);
-        context.strokeStyle = `rgba(221,250,255,${.35 + particle.speed * .25})`;
-        context.lineWidth = .9 + particle.speed * .8; context.lineCap = "round"; context.stroke();
-        context.beginPath(); context.arc(head.x, head.y, .7 + particle.speed * .55, 0, Math.PI * 2);
-        context.fillStyle = "rgba(243,255,234,.85)"; context.fill();
+         size.context.beginPath(); size.context.moveTo(tail.x, tail.y); size.context.lineTo(head.x, head.y);
+         size.context.strokeStyle = `rgba(221,250,255,${.35 + particle.speed * .25})`;
+         size.context.lineWidth = .9 + particle.speed * .8; size.context.lineCap = "round"; size.context.stroke();
+         size.context.beginPath(); size.context.arc(head.x, head.y, .7 + particle.speed * .55, 0, Math.PI * 2);
+         size.context.fillStyle = "rgba(243,255,234,.85)"; size.context.fill();
       }
     };
     const onVisibilityChange = () => { if (!document.hidden) viewer.scene.requestRender(); };
