@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AlertCircle, ArrowRight, Check, CheckCircle2, ChevronDown, CircleHelp, Compass, Info, LoaderCircle, MapPin, Minus, Plus, RotateCcw, Ruler, Satellite, Sparkles, X } from "lucide-react";
+import { AlertCircle, ArrowRight, Check, CheckCircle2, ChevronDown, CircleHelp, Info, LoaderCircle, MapPin, Minus, Plus, RotateCcw, Ruler, Satellite, Sparkles, X } from "lucide-react";
 import WizardHeader from "./wizard-header";
 import LocationCard from "./location-card";
 import PlanCard from "./plan-card";
@@ -107,7 +107,6 @@ function WizardContent() {
                <WizardMap points={points} mode={mapMode} cameraTarget={cameraTarget} spin={!location} onCameraMove={setCameraMoving} onChange={(next) => { setPolygon(next.length ? closePolygon(next) : null); setPageError(""); }} />
               <div className="wizard-map-top-hud"><span><i /> GLOBO DE LA TIERRA · CESIUM</span></div>
               {points.length >= 3 && <div className="wizard-map-measure"><span><small>SUPERFICIE DEL TERRENO</small><strong>{geometry.areaHa.toLocaleString("es-BO", { maximumFractionDigits: 2 })} <em>ha</em></strong><i>{geometry.areaHa < 100 ? `${Math.round(geometry.areaHa * 10_000).toLocaleString("es-BO")} m²` : `${(geometry.areaHa / 100).toFixed(2)} km²`}</i></span><span className="wizard-measure-divider" /><span><small>CENTRO APROXIMADO</small><strong className="wizard-coordinate">{Math.abs(geometry.center[1]).toFixed(4)}° S <i>·</i> {Math.abs(geometry.center[0]).toFixed(4)}° O</strong><i>{points.length} vértices</i></span></div>}
-              {!location && <div className="wizard-map-empty"><span><Compass size={20} /></span><strong>Elige tu zona para acercar el globo</strong><p>Busca una dirección o selecciona el país, departamento y municipio.</p></div>}
               {location && mapMode === "draw" && <div className="wizard-map-instruction"><Sparkles size={13} /> Haz clic en el mapa para marcar cada esquina del campo. Pulsa <kbd>Listo</kbd> al terminar.</div>}
               {location && mapMode === "edit" && <div className="wizard-map-instruction"><Ruler size={13} /> Arrastra los puntos blancos para moverlos · los puntos ámbar añaden un vértice · clic derecho elimina.</div>}
               {step === 2 && points.length >= 3 && <div className="wizard-map-scale"><span>AJUSTA EL CONTORNO</span><button onClick={() => scaleParcel(.9)} aria-label="Reducir el tamaño del polígono"><Minus size={14} /></button><button onClick={() => scaleParcel(1.1)} aria-label="Aumentar el tamaño del polígono"><Plus size={14} /></button></div>}
