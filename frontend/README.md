@@ -1,36 +1,25 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Yapana Agro · Wizard de campo
 
-## Getting Started
+Interfaz Next.js para el reto NASA Space Apps Challenge 2026, “Field Shift: Adapting Farms with NASA Data”. La ruta `/` abre directamente el flujo de tres pasos: ubicación y parcela, planes de siembra y resultados.
 
-First, run the development server:
+## Desarrollo local
+
+1. Instala Node.js `>=22.17` (Cesium lo requiere) y ejecuta `npm ci`.
+2. Copia `.env.example` a `.env.local` si necesitas cambiar los valores.
+3. Ejecuta `npm run dev` y abre [http://localhost:3000](http://localhost:3000).
+
+Por defecto el diagnóstico, las alertas y el chat usan datos determinísticos de ejemplo (`NEXT_PUBLIC_USE_MOCK=true`). No son mediciones NASA actuales ni recomendaciones agronómicas validadas. Para usar el servicio del equipo, configura `NEXT_PUBLIC_API_BASE_URL` y `NEXT_PUBLIC_USE_MOCK=false`; los endpoints y contratos están en [docs/api-wizard.md](docs/api-wizard.md).
+
+El mapa Cesium funciona del lado del cliente y usa los recursos copiados en `public/cesium/`. Si el acceso de imágenes/base map requiere Ion, configura `NEXT_PUBLIC_CESIUM_ION_TOKEN` en `.env.local`.
+
+La búsqueda de lugares pasa por `/api/geocode` y usa Nominatim con debounce, caché breve y control de frecuencia. Revisa su política antes de producción; para tráfico de equipo, configura un proveedor geográfico propio.
+
+## Comandos
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run lint
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+El repo base no tenía manifiesto PWA ni service worker. La limpieza no los eliminó; el soporte de instalación/offline queda pendiente de una etapa específica.
