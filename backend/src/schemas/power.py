@@ -105,6 +105,33 @@ class PolygonRequest(DataQuery):
     include_points: bool = Field(False, description="Incluir la serie de cada punto")
 
 
+class PolygonRecommendationRequest(PolygonRequest):
+    """Consulta NASA POWER del polígono y datos para la recomendación agrícola."""
+
+    plants: list[str] = Field(min_length=1, description="Cultivos que se quieren evaluar")
+    municipality_id: int | None = None
+    municipality_name: str | None = None
+    priorities: str | None = Field(
+        None, description="Prioridad libre del agricultor, por ejemplo ahorrar agua o costos"
+    )
+    crop_requirements: dict[str, Any] | None = None
+    current_crop: str | None = None
+
+    @field_validator("temporal")
+    @classmethod
+    def _daily_or_hourly(cls, value: Temporal) -> Temporal:
+        if value not in (Temporal.daily, Temporal.hourly):
+            raise ValueError("La recomendación admite únicamente temporal 'daily' o 'hourly'")
+        return value
+
+    @field_validator("plants")
+    @classmethod
+    def _non_empty_plants(cls, value: list[str]) -> list[str]:
+        if not any(plant.strip() for plant in value):
+            raise ValueError("Indique al menos un cultivo")
+        return value
+
+
 class PointResponse(BaseModel):
     latitude: float
     longitude: float
@@ -122,3 +149,9 @@ class PolygonResponse(BaseModel):
     summary: dict[str, dict[str, float | int | None]]
     points: list[PointResponse] | None = None
     errors: list[dict[str, Any]] = Field(default_factory=list)
+
+
+class PolygonRecommendationResponse(BaseModel):
+    polygon: PolygonResponse
+    recommendation: str = Field(description="Evaluación agrícola detallada en Markdown")
+    audio_summary: str = Field(description="Resumen breve en español sencillo, listo para voz")

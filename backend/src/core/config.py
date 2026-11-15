@@ -19,6 +19,15 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3000",
     ]
 
+    power_base_url: str = "https://power.larc.nasa.gov"
+    power_timeout_s: float = 30.0
+    power_max_retries: int = 3
+    power_max_concurrency: int = 8
+    power_cache_ttl_s: int = 900
+    power_max_params_per_request: int = 20
+    power_max_points: int = 100
+    power_user: str = ""
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
