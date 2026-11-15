@@ -74,8 +74,8 @@ function validateSuggestions(data: unknown): data is SuggestionsResponse {
   return alertsValid && recommendationsValid && typeof data.metadatos.generadoEn === "string" && typeof data.metadatos.esDatoDeEjemplo === "boolean";
 }
 function validateChat(data: unknown): data is { respuesta: string } { return isRecord(data) && typeof data.respuesta === "string"; }
-function validateRecommendation(data: unknown): data is { polygon: { summary: Record<string, Record<string, number | null>> }; recommendation: string; audio_summary: string } {
-  return isRecord(data) && isRecord(data.polygon) && isRecord(data.polygon.summary) && typeof data.recommendation === "string" && typeof data.audio_summary === "string";
+function validateRecommendation(data: unknown): data is { polygon: { summary: Record<string, Record<string, number | null>> }; recommendation: string; recommendations: string; audio_summary: string } {
+  return isRecord(data) && isRecord(data.polygon) && isRecord(data.polygon.summary) && typeof data.recommendation === "string" && typeof data.recommendations === "string" && typeof data.audio_summary === "string";
 }
 
 function recommendationPayload(request: WizardRequest) {
@@ -129,6 +129,7 @@ async function getRecommendation(request: WizardRequest, signal?: AbortSignal) {
     vaciosDeInformacion: ["Análisis local de suelo", "Validación de campo y costos locales"],
     metadatos: { generadoEn: now, esDatoDeEjemplo: false, zona: `${request.ubicacion.municipality}, ${request.ubicacion.department}, ${request.ubicacion.country}`, areaHa: request.areaHa, centroide: request.centroide },
     backendReport: response.recommendation,
+    backendRecommendations: response.recommendations,
   };
   const suggestions: SuggestionsResponse = { alertas: [], recomendaciones: [{ titulo: "Recomendación del backend", detalle: response.recommendation, prioridades: request.prioridades, confianza: "media" }], vaciosDeInformacion: ["Validar la recomendación con asistencia local."], metadatos: { generadoEn: now, esDatoDeEjemplo: false } };
   return { diagnosis, suggestions, audioSummary: response.audio_summary };

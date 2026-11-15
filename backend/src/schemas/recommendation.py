@@ -8,4 +8,7 @@ class PolygonRecommendationResponse(BaseModel):
     polygon: PolygonResponse
     soil: SoilPolygonResponse
     recommendation: str = Field(description="Evaluación agrícola detallada en Markdown")
+    recommendations: str = Field(
+        description="Recomendaciones prácticas de cultivo y cuidado basadas en los datos"
+    )
     audio_summary: str = Field(description="Resumen breve en español sencillo, listo para voz")

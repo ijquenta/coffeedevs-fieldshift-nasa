@@ -135,14 +135,15 @@ La ubicación enviada al modelo contiene la geometría, los datos municipales re
 
 ## Respuesta
 
-La respuesta contiene cuatro propiedades principales:
+La respuesta contiene cinco propiedades principales:
 
 | Campo | Contenido |
 |---|---|
 | `polygon` | Respuesta de NASA POWER producida por la consulta de polígono. Incluye la consulta ejecutada, cantidad de puntos, parámetros, series agregadas, resumen estadístico, puntos individuales opcionales y errores parciales. |
 | `soil` | Respuesta de `POST /api/soil/polygon`: consulta, parámetros de suelo, series agregadas, resumen estadístico, puntos individuales opcionales y errores parciales. |
-| `recommendation` | Texto detallado de Gemini en Markdown, con la comparación de todas las plantas solicitadas, porcentajes justificables, motivos, acciones y alternativas disponibles. Está pensado para renderizarse en el frontend. |
-| `audio_summary` | Resumen independiente en español sencillo, de 3 a 6 frases, sin tablas ni formato Markdown. Está pensado para enviarse a texto-a-voz; no agrega datos distintos de la evaluación detallada. |
+| `recommendation` | Evaluación detallada de Gemini en Markdown, con la comparación de las plantas solicitadas, porcentajes justificables, motivos y alternativas disponibles. |
+| `recommendations` | Campo Markdown separado con acciones concretas de siembra y cuidado para los cultivos considerados, fundamentadas en las mediciones de clima y suelo. |
+| `audio_summary` | Resumen independiente en español sencillo, de 3 a 6 frases, sin tablas ni formato Markdown. Está pensado para enviarse a texto-a-voz y resume de forma coherente la evaluación y las acciones prácticas. |
 
 Estructura resumida de `polygon`:
 
@@ -266,13 +267,14 @@ Ejemplo de forma de respuesta (valores ilustrativos, no son datos reales):
     "errors": []
   },
   "recommendation": "## A. Condiciones ambientales\\n\\n[Indicadores y datos disponibles]\\n\\n## B. Comparación\\n\\n[Tabla con una fila por planta y porcentajes justificables]\\n\\n## C. Evaluación por planta\\n\\n[Motivos, limitaciones y cuidados]\\n\\n## D. Alternativas\\n\\n[Opciones justificadas, si los datos lo permiten]\\n\\n## E. Conclusión\\n\\n[Decisión y próximos pasos]",
+  "recommendations": "## Acciones prácticas\\n\\n- **Papa:** [cuidado concreto respaldado por las mediciones disponibles].\\n- **Haba:** [acción de siembra o cuidado y su motivo].\\n- **Parcela:** [práctica de agua, suelo o vigilancia pertinente].",
   "audio_summary": "[Resumen oral breve: qué opciones convienen, por qué y qué cuidados tomar.]"
 }
 ```
 
 El ejemplo muestra únicamente la estructura. Los porcentajes y recomendaciones reales dependen de la consulta. Si la información no permite calcular un porcentaje confiable, Gemini debe explicarlo en vez de inventar uno.
 
-Gemini debe devolver `recommendation` y `audio_summary` como propiedades de un único objeto JSON. Si el proveedor devuelve una respuesta vacía o con formato inválido, la API responde con un error `502` en vez de presentar una respuesta incompleta como exitosa. `audio_summary` es texto preparado para que el frontend lo entregue a su sistema de texto a voz; este endpoint no genera un archivo de audio.
+Gemini debe devolver `recommendation`, `recommendations` y `audio_summary` como propiedades de un único objeto JSON. Si el proveedor devuelve una respuesta vacía, omite un campo o usa un formato inválido, la API responde con un error `502` en vez de presentar una respuesta incompleta como exitosa. `audio_summary` es texto preparado para que el frontend lo entregue a su sistema de texto a voz; este endpoint no genera un archivo de audio.
 
 ## Ejemplos de solicitudes
 
