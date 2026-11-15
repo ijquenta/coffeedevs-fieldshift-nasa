@@ -1,7 +1,7 @@
 /* Yapana Agro offline shell. Live analysis and geocoding are never cached. */
-const SHELL_CACHE = "yapana-shell-v1";
+const SHELL_CACHE = "yapana-shell-v2";
 const STATIC_CACHE = "yapana-static-v1";
-const SHELL_URLS = ["/offline.html", "/icon-192.png", "/icon-512.png", "/icon-maskable-512.png"];
+const SHELL_URLS = ["/offline.html", "/icons/icon-192.png", "/icons/icon-512.png", "/icons/icon-maskable-512.png", "/icons/apple-touch-icon.png", "/icons/icon.svg"];
 const STATIC_PREFIXES = ["/_next/static/", "/cesium/"];
 
 self.addEventListener("install", (event) => {

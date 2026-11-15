@@ -24,7 +24,7 @@ npm run build
 
 ## PWA y uso móvil
 
-La app incluye un manifiesto con iconos de instalación (Android y Apple), un control de instalación cuando el navegador ofrece ese flujo y un service worker de producción. El service worker conserva la pantalla visitada y los recursos estáticos locales del wizard/Cesium, y ofrece una página breve si se abre sin conexión. Las consultas de geocodificación y análisis no se guardan en caché: requieren conexión para devolver datos actuales.
+La app define su manifiesto en `src/app/manifest.ts` (servido como `/manifest.webmanifest`) y guarda los iconos PWA en `public/icons/` para Android, iOS y dispositivos maskable. Incluye un control de instalación y un service worker de producción. El service worker conserva la pantalla visitada y los recursos estáticos locales del wizard/Cesium, y ofrece una página breve si se abre sin conexión. Las consultas de geocodificación y análisis no se guardan en caché: requieren conexión para devolver datos actuales.
 
 Para probar la instalación, ejecuta `npm run build` y `npm run start` y abre el sitio desde `localhost` o un origen HTTPS. Los navegadores bloquean service workers en orígenes HTTP inseguros. El modo de desarrollo no registra el service worker para evitar que una caché vieja interfiera con los cambios.
 
