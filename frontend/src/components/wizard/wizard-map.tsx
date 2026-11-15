@@ -1,20 +1,38 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { CloudRain, Droplets, Leaf, Thermometer, Waves } from "lucide-react";
 import type { Position } from "../../types/wizard";
 import type { MapMode } from "./wizard-store";
 
 interface Props { points: Position[]; mode: MapMode; cameraTarget: { position: Position; altitude?: number; key: string } | null; spin: boolean; onChange: (points: Position[]) => void }
 
+type WeatherLayerId = "rain" | "temperature" | "soil" | "vegetation";
+
+const WEATHER_LAYERS: Record<WeatherLayerId, { label: string; source: string; product: string; cadence: string; icon: typeof CloudRain }> = {
+  rain: { label: "Lluvia", source: "NASA GPM IMERG", product: "IMERG_Precipitation_Rate_30min", cadence: "cada 30 min", icon: CloudRain },
+  temperature: { label: "Temperatura", source: "NASA AIRS · Aqua", product: "AIRS_L2_Surface_Air_Temperature_Day", cadence: "diaria", icon: Thermometer },
+  soil: { label: "Humedad del suelo", source: "NASA SMAP L4", product: "SMAP_L4_Analyzed_Root_Zone_Soil_Moisture", cadence: "diaria", icon: Waves },
+  vegetation: { label: "Vegetación", source: "NASA VIIRS NOAA-21", product: "VIIRS_NOAA21_NDVI_8Day", cadence: "cada 8 días", icon: Leaf },
+};
+
 export default function WizardMap({ points, mode, cameraTarget, spin, onChange }: Props) {
   const host = useRef<HTMLDivElement>(null);
+  const weatherCanvas = useRef<HTMLCanvasElement>(null);
   const viewerRef = useRef<import("cesium").Viewer | null>(null);
   const cesiumRef = useRef<typeof import("cesium") | null>(null);
   const handlerRef = useRef<import("cesium").ScreenSpaceEventHandler | null>(null);
+  const rainLayerRef = useRef<import("cesium").ImageryLayer | null>(null);
   const pointsRef = useRef(points), modeRef = useRef(mode), onChangeRef = useRef(onChange);
   const dragging = useRef<{ index: number } | { original: Position[]; origin: Position } | null>(null);
   const userInputUntil = useRef(0);
   const [ready, setReady] = useState(false);
+  const [rainEnabled, setRainEnabled] = useState(true);
+  const [weatherLayer, setWeatherLayer] = useState<WeatherLayerId>("rain");
+  const [refreshKey, setRefreshKey] = useState(0);
+  const rainEnabledRef = useRef(rainEnabled);
+
+  useEffect(() => { rainEnabledRef.current = rainEnabled; }, [rainEnabled]);
 
   useEffect(() => { pointsRef.current = points; modeRef.current = mode; onChangeRef.current = onChange; }, [points, mode, onChange]);
 
@@ -105,5 +123,125 @@ export default function WizardMap({ points, mode, cameraTarget, spin, onChange }
     viewer.scene.requestRender();
   }, [mode, points, ready]);
 
-  return <div ref={host} className="wizard-cesium" aria-label="Globo 3D interactivo para ubicar y editar la parcela" />;
+  useEffect(() => {
+    const Cesium = cesiumRef.current, viewer = viewerRef.current, canvas = weatherCanvas.current;
+    if (!ready || !Cesium || !viewer || !canvas || viewer.isDestroyed()) return;
+    let cancelled = false;
+    let animationFrame = 0;
+    let lastFrame = 0;
+    const context = canvas.getContext("2d", { alpha: true });
+    if (!context) return;
+
+    // NASA GIBS serves the georeferenced satellite/model products directly as WMS imagery.
+    const selectedLayer = WEATHER_LAYERS[weatherLayer];
+    const provider = new Cesium.WebMapServiceImageryProvider({
+      url: "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi",
+      layers: selectedLayer.product,
+      parameters: { format: "image/png", transparent: true, time: "default", cacheBust: refreshKey },
+      srs: "EPSG:4326",
+      credit: `${selectedLayer.source} · NASA GIBS`,
+    });
+    const imageryLayer = viewer.imageryLayers.addImageryProvider(provider);
+    imageryLayer.alpha = .84;
+    imageryLayer.show = rainEnabledRef.current;
+    rainLayerRef.current = imageryLayer;
+    viewer.scene.requestRender();
+
+    const fitCanvas = () => {
+      const bounds = canvas.getBoundingClientRect(), ratio = Math.min(window.devicePixelRatio || 1, 2);
+      if (!bounds.width || !bounds.height) return;
+      if (canvas.width !== Math.round(bounds.width * ratio) || canvas.height !== Math.round(bounds.height * ratio)) {
+        canvas.width = Math.round(bounds.width * ratio); canvas.height = Math.round(bounds.height * ratio);
+      }
+      context.setTransform(ratio, 0, 0, ratio, 0, 0);
+      return { width: bounds.width, height: bounds.height };
+    };
+    const focus = cameraTarget?.position ?? [-63.5, -17.5] as [number, number];
+    let seed = Math.abs(Math.round(focus[0] * 10_000 + focus[1] * 100_000)) + 17;
+    const random = (min: number, max: number) => { seed = (seed * 16807) % 2147483647; return min + (seed / 2147483647) * (max - min); };
+    const particles = Array.from({ length: 76 }, () => ({
+      longitude: focus[0] + random(-.34, .34), latitude: focus[1] + random(-.26, .26),
+      direction: random(0, Math.PI * 2), speed: random(.45, 1.15), length: random(.012, .04),
+      phase: random(0, Math.PI * 2),
+    }));
+    const projected = (longitude: number, latitude: number) => Cesium.SceneTransforms.worldToWindowCoordinates(
+      viewer.scene, Cesium.Cartesian3.fromDegrees(longitude, latitude, 1800),
+    );
+    const drawParticles = (time: number) => {
+      if (cancelled) return;
+      animationFrame = window.requestAnimationFrame(drawParticles);
+      if (time - lastFrame < 48) return;
+      lastFrame = time;
+      const size = fitCanvas(); if (!size) return;
+      context.clearRect(0, 0, size.width, size.height);
+      if (!rainEnabledRef.current || weatherLayer !== "rain" || document.hidden) return;
+      for (const particle of particles) {
+        // Windy-inspired moving traces: decorative flow only; GPM provides rain, not wind vectors.
+        const angle = particle.direction + Math.sin(particle.longitude * 17 + particle.latitude * 23 + particle.phase) * .42;
+        const dx = Math.cos(angle) * .0012 * particle.speed, dy = Math.sin(angle) * .0012 * particle.speed;
+        particle.longitude += dx; particle.latitude += dy;
+        if (Math.abs(particle.longitude - focus[0]) > .36 || Math.abs(particle.latitude - focus[1]) > .28) {
+          particle.longitude = focus[0] + random(-.34, .34); particle.latitude = focus[1] + random(-.26, .26);
+        }
+        const head = projected(particle.longitude, particle.latitude);
+        const tail = projected(particle.longitude - Math.cos(angle) * particle.length, particle.latitude - Math.sin(angle) * particle.length);
+        if (!head || !tail || head.x < -20 || head.y < -20 || head.x > size.width + 20 || head.y > size.height + 20) continue;
+        context.beginPath(); context.moveTo(tail.x, tail.y); context.lineTo(head.x, head.y);
+        context.strokeStyle = `rgba(221,250,255,${.35 + particle.speed * .25})`;
+        context.lineWidth = .9 + particle.speed * .8; context.lineCap = "round"; context.stroke();
+        context.beginPath(); context.arc(head.x, head.y, .7 + particle.speed * .55, 0, Math.PI * 2);
+        context.fillStyle = "rgba(243,255,234,.85)"; context.fill();
+      }
+    };
+    const onVisibilityChange = () => { if (!document.hidden) viewer.scene.requestRender(); };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    const resize = new ResizeObserver(fitCanvas); resize.observe(canvas);
+    animationFrame = window.requestAnimationFrame(drawParticles);
+    return () => {
+      cancelled = true; window.cancelAnimationFrame(animationFrame); resize.disconnect(); document.removeEventListener("visibilitychange", onVisibilityChange);
+      if (!viewer.isDestroyed()) viewer.imageryLayers.remove(imageryLayer, true);
+      if (rainLayerRef.current === imageryLayer) rainLayerRef.current = null;
+    };
+  }, [ready, cameraTarget, weatherLayer, refreshKey]);
+
+  useEffect(() => {
+    const viewer = viewerRef.current;
+    if (!ready || !viewer || viewer.isDestroyed()) return;
+    if (rainLayerRef.current) rainLayerRef.current.show = rainEnabled;
+    viewer.scene.requestRender();
+  }, [rainEnabled, ready]);
+
+  useEffect(() => {
+    const interval = WEATHER_LAYERS[weatherLayer].cadence === "cada 30 min" ? 30 * 60_000 : 6 * 60 * 60_000;
+    const timer = window.setInterval(() => setRefreshKey((current) => current + 1), interval);
+    return () => window.clearInterval(timer);
+  }, [weatherLayer]);
+  const selectedWeatherLayer = WEATHER_LAYERS[weatherLayer];
+  const WeatherIcon = selectedWeatherLayer.icon;
+
+  return <>
+    <div ref={host} className="wizard-cesium" aria-label="Globo 3D interactivo para ubicar y editar la parcela" />
+    <canvas ref={weatherCanvas} className="wizard-weather-canvas" aria-hidden="true" />
+    <div className="wizard-rain-control" aria-label="Capas de observación de NASA">
+      <button type="button" className={`wizard-rain-toggle ${rainEnabled ? "is-on" : ""}`} onClick={() => setRainEnabled((current) => !current)} aria-pressed={rainEnabled} title={rainEnabled ? "Ocultar la capa del mapa" : "Mostrar la capa del mapa"}>
+        <span className="wizard-rain-icon"><WeatherIcon size={17} /></span>
+        <span className="wizard-rain-copy"><strong>{selectedWeatherLayer.label.toLocaleUpperCase("es-BO")}</strong><small>{rainEnabled ? "Capa satelital activa" : "Capa apagada"}</small></span>
+        <span className="wizard-rain-switch"><i /></span>
+      </button>
+      <div className="wizard-weather-options" role="group" aria-label="Variable para mostrar sobre el globo">
+        {(Object.keys(WEATHER_LAYERS) as WeatherLayerId[]).map((id) => {
+          const layer = WEATHER_LAYERS[id], Icon = layer.icon;
+          return <button key={id} type="button" className={weatherLayer === id ? "is-selected" : ""} onClick={() => setWeatherLayer(id)} aria-pressed={weatherLayer === id}>
+            <Icon size={12} /><span>{layer.label}</span>
+          </button>;
+        })}
+      </div>
+      {rainEnabled && <div className="wizard-rain-legend">
+        <div><Droplets size={13} /><span>{weatherLayer === "rain" ? "Tasa de precipitación · mm/h" : selectedWeatherLayer.source}</span></div>
+        <span className={`wizard-weather-gradient ${weatherLayer}`} />
+        <div className="wizard-rain-scale"><span>{weatherLayer === "rain" ? "0.1 mm/h" : "Bajo"}</span><strong>NASA GIBS · {selectedWeatherLayer.cadence}</strong><span>{weatherLayer === "rain" ? "50+ mm/h" : "Alto"}</span></div>
+        {weatherLayer === "rain" && <small className="wizard-flow-disclaimer">Estelas animadas ilustrativas; no son vectores de viento.</small>}
+      </div>}
+    </div>
+  </>;
 }
