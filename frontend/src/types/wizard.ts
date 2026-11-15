@@ -46,7 +46,8 @@ export interface DiagnosisResponse {
   vaciosDeInformacion: string[];
   metadatos: { generadoEn: string; esDatoDeEjemplo: boolean; zona: string; areaHa: number; centroide: Position };
   backendReport?: string;
-  backendRecommendations?: string;
+  backendSummary?: Record<string, Record<string, number | null>>;
+  audioSummary?: string;
 }
 
 export interface AlertItem {

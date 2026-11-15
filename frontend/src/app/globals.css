@@ -116,3 +116,15 @@ body { font-size: 16px; }
   vertical-align: top;
 }
 .wizard-backend-report th { background: rgba(201,239,129,.12); color: var(--text); font-weight: 700; }
+.wizard-backend-summary { margin: 1rem 0 1.25rem; }
+.wizard-backend-summary > summary { margin-bottom: .75rem; color: var(--text); font-size: 1rem; font-weight: 700; cursor: pointer; }
+.wizard-power-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: .7rem; }
+.wizard-power-card { position: relative; padding: .85rem; border: 1px solid var(--line); border-radius: 12px; background: var(--panel-raised); color: var(--text); }
+.wizard-power-card-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: .5rem; margin-bottom: .75rem; }
+.wizard-power-card-heading strong { font-size: .88rem; }
+.wizard-power-card code { color: var(--lime); font-size: .68rem; }
+.wizard-power-card-values { display: grid; grid-template-columns: repeat(3, 1fr); gap: .4rem; }
+.wizard-power-card-values span { display: grid; gap: .2rem; min-width: 0; }
+.wizard-power-card-values small { color: var(--muted); font-size: .65rem; }
+.wizard-power-card-values b { color: var(--text); font-size: .76rem; overflow-wrap: anywhere; }
+.wizard-power-card em { display: block; margin-top: .65rem; color: var(--green); font-size: .68rem; font-style: normal; }

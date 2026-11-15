@@ -126,9 +126,10 @@ async function getRecommendation(request: WizardRequest, signal?: AbortSignal) {
     vaciosDeInformacion: ["Análisis local de suelo", "Validación de campo y costos locales"],
     metadatos: { generadoEn: now, esDatoDeEjemplo: false, zona: `${request.ubicacion.municipality}, ${request.ubicacion.department}, ${request.ubicacion.country}`, areaHa: request.areaHa, centroide: request.centroide },
     backendReport: response.recommendation,
-    backendRecommendations: response.recommendations,
+    backendSummary: response.polygon.summary,
+    audioSummary: response.audio_summary,
   };
-  const suggestions: SuggestionsResponse = { alertas: [], recomendaciones: [{ titulo: "Recomendación del backend", detalle: response.recommendation, prioridades: request.prioridades, confianza: "media" }], vaciosDeInformacion: ["Validar la recomendación con asistencia local."], metadatos: { generadoEn: now, esDatoDeEjemplo: false } };
+  const suggestions: SuggestionsResponse = { alertas: [], recomendaciones: [], vaciosDeInformacion: ["Validar la recomendación con asistencia local."], metadatos: { generadoEn: now, esDatoDeEjemplo: false } };
   return { diagnosis, suggestions, audioSummary: response.audio_summary };
 }
 
