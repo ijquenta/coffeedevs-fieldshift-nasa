@@ -27,6 +27,12 @@ class MunicipioDetalleResponse(MunicipioLaPaz):
     cultivos_detalle: list[CultivoResumenItem] = Field(default_factory=list)
 
 
+class CultivoMunicipiosResponse(BaseModel):
+    id: int
+    nombre: str
+    municipios: list[str]
+
+
 class CampanaDetalle(BaseModel):
     rendimiento_kgha: dict[str, float | None] = Field(default_factory=dict)
     produccion_ton: dict[str, float | None] = Field(default_factory=dict)
