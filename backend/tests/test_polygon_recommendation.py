@@ -89,6 +89,7 @@ class FakeAIProvider:
         self.response_text = json.dumps(
             {
                 "recommendation": "## Evaluación\nRecomendación detallada.",
+                "recommendations": "## Cuidados\nRevisa la humedad del suelo antes de regar.",
                 "audio_summary": "Conviene sembrar con cuidado y vigilar el agua.",
             },
             ensure_ascii=False,
@@ -151,6 +152,10 @@ class TestPolygonRecommendationEndpoint(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200, response.text)
         self.assertEqual(response.json()["recommendation"], "## Evaluación\nRecomendación detallada.")
+        self.assertEqual(
+            response.json()["recommendations"],
+            "## Cuidados\nRevisa la humedad del suelo antes de regar.",
+        )
         self.assertEqual(
             response.json()["audio_summary"],
             "Conviene sembrar con cuidado y vigilar el agua.",
@@ -265,3 +270,27 @@ class TestPolygonRecommendationEndpoint(unittest.TestCase):
 
         self.assertEqual(response.status_code, 502)
         self.assertEqual(response.json()["error"], "AIProviderError")
+
+    def test_missing_recommendations_field_returns_explicit_error(self) -> None:
+        self.ai_provider.response_text = json.dumps(
+            {
+                "recommendation": "## Evaluación\nTexto de evaluación.",
+                "audio_summary": "Resumen.",
+            },
+            ensure_ascii=False,
+        )
+        payload = {
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [[[-68.2, -16.5], [-68.1, -16.5], [-68.1, -16.4], [-68.2, -16.5]]],
+            },
+            "start": "2024-01-01",
+            "end": "2024-01-02",
+            "parameters": ["T2M"],
+            "plants": ["papa"],
+        }
+
+        response = self.client.post("/api/power/polygon/recommendation", json=payload)
+
+        self.assertEqual(response.status_code, 502)
+        self.assertIn("recommendations", response.json()["detail"])

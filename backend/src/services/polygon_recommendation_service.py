@@ -24,6 +24,7 @@ PROMPT_PATH = Path(__file__).resolve().parents[2] / "docs" / "prompt.md"
 
 class _RecommendationContent(BaseModel):
     recommendation: str
+    recommendations: str
     audio_summary: str
 
 
@@ -78,14 +79,20 @@ class PolygonRecommendationService:
             raise AIProviderError(
                 f"Gemini devolvió una salida JSON incompleta o inválida: {issues}"
             ) from exc
-        if not content.recommendation.strip() or not content.audio_summary.strip():
+        if (
+            not content.recommendation.strip()
+            or not content.recommendations.strip()
+            or not content.audio_summary.strip()
+        ):
             raise AIProviderError(
-                "Gemini devolvió campos vacíos para 'recommendation' o 'audio_summary'."
+                "Gemini devolvió campos vacíos para 'recommendation', "
+                "'recommendations' o 'audio_summary'."
             )
         return PolygonRecommendationResponse(
             polygon=polygon,
             soil=soil,
             recommendation=content.recommendation,
+            recommendations=content.recommendations,
             audio_summary=content.audio_summary,
         )
 
