@@ -33,10 +33,11 @@ class PolygonRecommendationService:
         self,
         request: PolygonRecommendationRequest,
         municipality: MunicipioDetalleResponse | None = None,
+        department_name: str | None = None,
     ) -> PolygonRecommendationResponse:
         polygon = await self._power_service.polygon(request)
         prompt = PROMPT_PATH.read_text(encoding="utf-8")
-        context = self._build_context(request, polygon, municipality)
+        context = self._build_context(request, polygon, municipality, department_name)
         raw_reply = await asyncio.to_thread(
             self._generate_reply,
             prompt,
@@ -74,10 +75,12 @@ class PolygonRecommendationService:
         request: PolygonRecommendationRequest,
         polygon: PolygonResponse,
         municipality: MunicipioDetalleResponse | None,
+        department_name: str | None,
     ) -> dict[str, Any]:
         location: dict[str, Any] = {
             "municipality_id": request.municipality_id,
             "municipality_name": request.municipality_name,
+            "department_name": department_name,
             "geometry": request.geometry.model_dump(mode="json"),
             "altitude_m": request.site_elevation,
         }

@@ -268,7 +268,6 @@ export default function WizardMap({ points, mode, cameraTarget, spin, onChange, 
         <div><Droplets size={13} /><span>{weatherLayer === "rain" ? "Tasa de precipitación · mm/h" : selectedWeatherLayer.source}</span></div>
         <span className={`wizard-weather-gradient ${weatherLayer}`} />
         <div className="wizard-rain-scale"><span>{weatherLayer === "rain" ? "0.1 mm/h" : "Bajo"}</span><strong>NASA GIBS · {selectedWeatherLayer.cadence}</strong><span>{weatherLayer === "rain" ? "50+ mm/h" : "Alto"}</span></div>
-        {weatherLayer === "rain" && <small className="wizard-flow-disclaimer">Estelas animadas ilustrativas; no son vectores de viento.</small>}
       </div>}
     </div>
   </>;
