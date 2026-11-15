@@ -4,8 +4,20 @@ import { useMemo, useState, type ReactNode } from "react";
 import { AlertTriangle, ArrowDownRight, ArrowLeft, ArrowUpRight, CheckCircle2, CircleHelp, CloudRain, Droplets, Flame, Leaf, Mountain, Pause, Play, RotateCcw, Satellite, ShieldAlert, Snowflake, Sparkles, Sprout, StopCircle, Thermometer, Volume2, Waves } from "lucide-react";
 import { useWizard } from "./wizard-store";
 import type { WeatherScenario } from "./wizard-map";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 const confidenceText = { alta: "Buena señal", media: "Señal parcial", baja: "Pocos datos" };
+function normalizarMarkdown(value: string) {
+  return value.replace(/\\n/g, "\n").replace(/\s*(\*\*[A-E]\.\s)/g, "\n\n$1").trim();
+}
+const markdownComponents = {
+  p: ({ children }: { children?: ReactNode }) => <p className="mb-3 leading-relaxed text-slate-300">{children}</p>,
+  strong: ({ children }: { children?: ReactNode }) => <strong className="font-semibold text-white">{children}</strong>,
+  ul: ({ children }: { children?: ReactNode }) => <ul className="list-disc pl-5">{children}</ul>,
+  ol: ({ children }: { children?: ReactNode }) => <ol className="list-decimal pl-5">{children}</ol>,
+  li: ({ children }: { children?: ReactNode }) => <li className="mb-1">{children}</li>,
+};
 const scenarios: { id: WeatherScenario; label: string; icon: typeof CloudRain; color: string }[] = [
   { id: "none", label: "Actual", icon: RotateCcw, color: "neutral" },
   { id: "drought", label: "Sequía", icon: Droplets, color: "drought" },
@@ -52,8 +64,8 @@ export default function ResultsCard({ onBack, scenario, onScenarioChange, severi
 
     <div className="wizard-result-tabs" role="tablist" aria-label="Vista del análisis"><button role="tab" aria-selected={resultTab === "diagnostico"} className={resultTab === "diagnostico" ? "active" : ""} onClick={() => setResultTab("diagnostico")}><Satellite size={14} /> Diagnóstico</button><button role="tab" aria-selected={resultTab === "sugerencias"} className={resultTab === "sugerencias" ? "active" : ""} onClick={() => setResultTab("sugerencias")}><Sparkles size={14} /> Sugerencias <span>{suggestions.alertas.length}</span></button></div>
 
-    {resultTab === "diagnostico" ? <div className="wizard-diagnosis-pane">
-      <div className="wizard-variable-grid">
+     {resultTab === "diagnostico" ? <div className="wizard-diagnosis-pane">
+        <div className="wizard-variable-grid">
         <Variable icon={<Droplets size={16} />} label="Humedad de suelo" value={diagnosis.variables.humedadSuelo} source="SMAP · señal regional" />
         <Variable icon={<CloudRain size={16} />} label="Lluvia estimada" value={diagnosis.variables.lluvia} source="GPM IMERG" />
         <Variable icon={<Thermometer size={16} />} label="Temperatura" value={diagnosis.variables.temperatura} source="NASA POWER" />
@@ -61,9 +73,10 @@ export default function ResultsCard({ onBack, scenario, onScenarioChange, severi
         <Variable icon={<Mountain size={16} />} label="Relieve" value={diagnosis.variables.relieve} source="SRTM · modelo del terreno" />
       </div>
       <div className="wizard-probability-heading"><div><p className="wizard-sub-kicker">ESCENARIOS DE SIEMBRA</p><h2>¿Qué cultivos podrían adaptarse?</h2></div><span title="Idoneidad es una orientación estadística, no una probabilidad garantizada de cosecha."><CircleHelp size={16} /></span></div>
-      <div className="wizard-probabilities">{diagnosis.probabilidades.map((crop, index) => <article className="wizard-crop-result" key={crop.cultivo}><div className="wizard-crop-result-top"><span className="wizard-crop-rank">0{index + 1}</span><strong>{crop.cultivo}</strong><span className={`wizard-confidence confidence-${crop.confianza}`}>{confidenceText[crop.confianza]}</span></div><div className="wizard-suitability"><div className="wizard-suitability-track"><i style={{ left: `${crop.min}%`, width: `${crop.max - crop.min}%` }} /></div><strong>{crop.min}–{crop.max}%</strong></div><p>{crop.motivoConfianza}</p><details><summary>Fuentes, riesgos y datos por revisar</summary><div className="wizard-details-grid"><div><b>DATOS NASA</b><span>{crop.fuentes.join(" · ")}</span></div><div><b>RIESGOS</b><span>{crop.riesgos.join(" ")}</span></div><div><b>FALTA SABER</b><span>{crop.vacios.join(" · ")}</span></div></div></details></article>)}</div>
+       <div className="wizard-probabilities">{diagnosis.probabilidades.map((crop, index) => <article className="wizard-crop-result" key={crop.cultivo}><div className="wizard-crop-result-top"><span className="wizard-crop-rank">0{index + 1}</span><strong>{crop.cultivo}</strong><span className={`wizard-confidence confidence-${crop.confianza}`}>{confidenceText[crop.confianza]}</span></div><div className="wizard-suitability"><div className="wizard-suitability-track"><i style={{ left: `${crop.min}%`, width: `${crop.max - crop.min}%` }} /></div><strong>{crop.min}–{crop.max}%</strong></div><p>{crop.motivoConfianza}</p><details><summary>Fuentes, riesgos y datos por revisar</summary><div className="wizard-details-grid"><div><b>DATOS NASA</b><span>{crop.fuentes.join(" · ")}</span></div><div><b>RIESGOS</b><span>{crop.riesgos.join(" ")}</span></div><div><b>FALTA SABER</b><span>{crop.vacios.join(" · ")}</span></div></div></details></article>)}</div>
+       {diagnosis.backendReport && <article className="wizard-backend-report"><ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>{normalizarMarkdown(diagnosis.backendReport)}</ReactMarkdown></article>}
       <div className="wizard-voice-card"><div className="wizard-voice-icon"><Volume2 size={19} /></div><div className="wizard-voice-copy"><strong>Escucha el resumen</strong><p>{speaking || paused ? highlightNarration() : "Te leemos las señales principales de tu parcela."}</p></div><div className="wizard-voice-controls"><button onClick={speaking && paused ? () => { window.speechSynthesis.resume(); setPaused(false); } : speaking ? () => { window.speechSynthesis.pause(); setPaused(true); } : speak} title={paused ? "Continuar" : speaking ? "Pausar" : "Escuchar resultados"}>{speaking && !paused ? <Pause size={15} /> : <Play size={15} />}</button>{speaking && <button onClick={stopSpeech} title="Detener"><StopCircle size={15} /></button>}</div></div>
-    </div> : <div className="wizard-suggestions-pane">
+     </div> : <div className="wizard-suggestions-pane">
       <div className="wizard-alert-title"><div><p className="wizard-sub-kicker">SEÑALES PARA VIGILAR</p><h2>Prepárate con tiempo.</h2></div><span>ORIENTATIVO</span></div>
       <div className="wizard-alerts">{suggestions.alertas.map((alert, index) => <article className={`wizard-alert alert-${alert.nivel}`} key={`${alert.tipo}-${index}`}><div className="wizard-alert-icon">{alert.tipo === "sequia" ? <Droplets size={17} /> : alert.tipo === "helada" ? <Snowflake size={17} /> : alert.tipo === "inundacion" ? <Waves size={17} /> : <AlertTriangle size={17} />}</div><div className="wizard-alert-content"><div className="wizard-alert-top"><strong>{({ sequia: "Agua disponible", helada: "Temperatura y helada", inundacion: "Exceso de agua", erosion: "Erosión", otro: "Señal para revisar" })[alert.tipo]}</strong><span>{alert.nivel === "alto" ? "ALTA ATENCIÓN" : alert.nivel === "medio" ? "ATENCIÓN" : "VIGILAR"}</span></div><p>{alert.motivo}</p><small>{alert.ventana.desde} · confianza {alert.confianza} · {alert.fuentes.join(" / ")}</small><div className="wizard-alert-action"><ArrowUpRight size={14} />{alert.accionSugerida}</div></div></article>)}</div>
       <div className="wizard-recommendations-title"><Sprout size={16} /><h2>Prácticas para comparar</h2></div>

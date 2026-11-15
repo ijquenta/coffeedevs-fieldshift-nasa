@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, CalendarDays, Check, ChevronDown, Plus, Sparkles, Sprout } from "lucide-react";
 import type { Priority } from "../../types/wizard";
 import { useWizard } from "./wizard-store";
+import { getBackendCrops } from "../../services/wizard";
 
 export const CROP_CATALOG = ["Papa", "Quinua", "Haba", "Maíz", "Cebada", "Avena", "Alfalfa", "Tarwi", "Amaranto", "Cañahua", "Oca", "Papalisa", "Arveja", "Trigo", "Frijol", "Lenteja"];
 export const PRIORITIES: Priority[] = ["Ahorrar agua", "Mejorar el suelo", "Reducir erosión", "Fijar nitrógeno", "Ingresos y mercado", "Forraje", "Resistir sequía", "Resistir heladas"];
@@ -11,8 +12,10 @@ export const PRIORITIES: Priority[] = ["Ahorrar agua", "Mejorar el suelo", "Redu
 export default function PlanCard({ onBack, onContinue, loading, showValidation }: { onBack: () => void; onContinue: () => void; loading: boolean; showValidation: boolean }) {
   const { products, setProducts, recommend, setRecommend, productQuery, setProductQuery, plantingMode, setPlantingMode, plantingFrom, setPlantingFrom, plantingTo, setPlantingTo, flexibleWeeks, setFlexibleWeeks, priorities, setPriorities, notes, setNotes } = useWizard();
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
-  const matches = useMemo(() => CROP_CATALOG.filter((crop) => crop.toLocaleLowerCase("es").includes(productQuery.trim().toLocaleLowerCase("es")) && !products.includes(crop)).slice(0, productQuery.trim() ? 8 : CROP_CATALOG.length), [productQuery, products]);
-  const canUseFreeText = productQuery.trim().length > 0 && !CROP_CATALOG.some((crop) => crop.toLocaleLowerCase("es") === productQuery.trim().toLocaleLowerCase("es")) && !products.some((crop) => crop.toLocaleLowerCase("es") === productQuery.trim().toLocaleLowerCase("es"));
+  const [availableCrops, setAvailableCrops] = useState(CROP_CATALOG);
+  useEffect(() => { const controller = new AbortController(); getBackendCrops(controller.signal).then((crops) => { if (crops.length) setAvailableCrops(crops); }).catch(() => undefined); return () => controller.abort(); }, []);
+  const matches = useMemo(() => availableCrops.filter((crop) => crop.toLocaleLowerCase("es").includes(productQuery.trim().toLocaleLowerCase("es")) && !products.includes(crop)).slice(0, productQuery.trim() ? 8 : availableCrops.length), [availableCrops, productQuery, products]);
+  const canUseFreeText = productQuery.trim().length > 0 && !availableCrops.some((crop) => crop.toLocaleLowerCase("es") === productQuery.trim().toLocaleLowerCase("es")) && !products.some((crop) => crop.toLocaleLowerCase("es") === productQuery.trim().toLocaleLowerCase("es"));
   const addProduct = (value: string) => { const crop = value.trim(); if (crop && !products.some((item) => item.toLocaleLowerCase("es") === crop.toLocaleLowerCase("es"))) setProducts([...products, crop]); setProductQuery(""); setSuggestionsOpen(false); setRecommend(false); };
   const togglePriority = (priority: Priority) => setPriorities(priorities.includes(priority) ? priorities.filter((value) => value !== priority) : [...priorities, priority]);
   return <section className="wizard-card-body wizard-plan-card">

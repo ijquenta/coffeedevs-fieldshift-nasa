@@ -4,6 +4,15 @@ const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK !== "false";
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "");
 const CROPS = ["Quinua", "Papa", "Haba", "Maíz", "Cebada", "Avena", "Alfalfa", "Tarwi", "Amaranto", "Cañahua", "Oca", "Papalisa", "Arveja", "Trigo", "Frijol", "Lenteja"];
 
+export async function getBackendCrops(signal?: AbortSignal): Promise<string[]> {
+  if (!API_BASE) throw new Error("Falta configurar NEXT_PUBLIC_API_BASE_URL para cargar cultivos.");
+  const response = await fetch(`${API_BASE}/api/v1/ine/la-paz/cultivos`, { signal, headers: { Accept: "application/json" }, cache: "no-store" });
+  if (!response.ok) throw new Error(`El servicio de cultivos respondió ${response.status}.`);
+  const data: unknown = await response.json();
+  if (!Array.isArray(data)) throw new Error("La respuesta de cultivos no es válida.");
+  return data.flatMap((item) => isRecord(item) && typeof item.nombre === "string" ? [item.nombre] : []).filter((crop, index, crops) => crops.indexOf(crop) === index);
+}
+
 function seedFor(request: WizardRequest) {
   const [lng, lat] = request.centroide;
   return Math.abs(Math.round(lng * 1e4 + lat * 1e5 + request.areaHa * 17 + request.fechaSiembra.desde.split("").reduce((sum, char) => sum + char.charCodeAt(0), 0)));
@@ -70,11 +79,18 @@ function validateRecommendation(data: unknown): data is { polygon: { summary: Re
 }
 
 function recommendationPayload(request: WizardRequest) {
+  const requestedStart = request.fechaSiembra.desde;
+  const requestedEnd = request.fechaSiembra.hasta || requestedStart;
+  const availableEnd = new Date();
+  availableEnd.setDate(availableEnd.getDate() - 3);
+  const historicalStart = new Date(availableEnd);
+  historicalStart.setDate(historicalStart.getDate() - 30);
+  const formatDate = (value: Date) => value.toISOString().slice(0, 10);
   return {
     geometry: request.polygon.geometry,
     temporal: "daily",
-    start: request.fechaSiembra.desde,
-    end: request.fechaSiembra.hasta || request.fechaSiembra.desde,
+    start: formatDate(historicalStart),
+    end: formatDate(availableEnd),
     community: "ag",
     presets: ["agro_all"],
     units: "metric",
@@ -82,14 +98,18 @@ function recommendationPayload(request: WizardRequest) {
     grid_step: 0.5,
     include_points: false,
     plants: request.recomendar ? ["Papa"] : request.productos,
-    municipality_name: request.ubicacion.municipality,
     priorities: request.prioridades.join(", "),
     current_crop: request.productos[0] || undefined,
+    requested_start: requestedStart,
+    requested_end: requestedEnd,
   };
 }
 
 async function getRecommendation(request: WizardRequest, signal?: AbortSignal) {
-  const response = await requestJSON("/api/power/polygon/recommendation", recommendationPayload(request), signal, validateRecommendation);
+  const payload = recommendationPayload(request);
+  console.info("[Yanapiri][Recommendation] Enviando solicitud", { path: "/api/power/polygon/recommendation", payload });
+  const response = await requestJSON("/api/power/polygon/recommendation", payload, signal, validateRecommendation);
+  console.info("[Yanapiri][Recommendation] Respuesta válida", { summaryKeys: Object.keys(response.polygon.summary), recommendationLength: response.recommendation.length });
   const summary = response.polygon.summary;
   const value = (names: string[]) => {
     for (const name of names) {
@@ -104,10 +124,11 @@ async function getRecommendation(request: WizardRequest, signal?: AbortSignal) {
   const now = new Date().toISOString();
   const crops = request.recomendar ? CROPS.slice(0, 5) : request.productos;
   const diagnosis: DiagnosisResponse = {
-    probabilidades: crops.map((cultivo, index) => ({ cultivo, min: Math.max(20, 70 - index * 5), max: Math.max(30, 82 - index * 4), confianza: "media", motivoConfianza: response.recommendation, fuentes: ["NASA POWER", "Datos de la parcela"], riesgos: ["Validar las condiciones directamente en campo."], vacios: ["Análisis local de suelo"] })),
+    probabilidades: crops.map((cultivo, index) => ({ cultivo, min: Math.max(20, 70 - index * 5), max: Math.max(30, 82 - index * 4), confianza: "media", motivoConfianza: "Evaluación basada en señales climáticas regionales y validación de campo pendiente.", fuentes: ["NASA POWER", "Datos de la parcela"], riesgos: ["Validar las condiciones directamente en campo."], vacios: ["Análisis local de suelo"] })),
     variables: { humedadSuelo: value(["GWETROOT", "GWETPROF"]), lluvia: value(["PRECTOTCORR", "PRECTOT"]), temperatura: value(["T2M", "T2M_MAX", "T2M_MIN"]), vegetacion: "Consultar Sentinel-2", relieve: "Consultar SRTM" },
     vaciosDeInformacion: ["Análisis local de suelo", "Validación de campo y costos locales"],
     metadatos: { generadoEn: now, esDatoDeEjemplo: false, zona: `${request.ubicacion.municipality}, ${request.ubicacion.department}, ${request.ubicacion.country}`, areaHa: request.areaHa, centroide: request.centroide },
+    backendReport: response.recommendation,
   };
   const suggestions: SuggestionsResponse = { alertas: [], recomendaciones: [{ titulo: "Recomendación del backend", detalle: response.recommendation, prioridades: request.prioridades, confianza: "media" }], vaciosDeInformacion: ["Validar la recomendación con asistencia local."], metadatos: { generadoEn: now, esDatoDeEjemplo: false } };
   return { diagnosis, suggestions, audioSummary: response.audio_summary };
@@ -118,7 +139,9 @@ async function getRecommendationWithFallback(request: WizardRequest, signal?: Ab
     return await getRecommendation(request, signal);
   } catch (error) {
     if (signal?.aborted) throw error;
-    if (!(error instanceof Error) || !error.message.includes("503")) throw error;
+    console.error("[Yanapiri][Recommendation] Falló la solicitud", error);
+    if (!(error instanceof Error) || !["502", "503", "504"].some((status) => error.message.includes(status))) throw error;
+    console.warn("[Yanapiri][Recommendation] Usando datos de respaldo");
     await delay(250, signal);
     return { diagnosis: mockDiagnosis(request), suggestions: mockSuggestions(request), audioSummary: "" };
   }
@@ -134,11 +157,16 @@ async function requestJSON<T>(path: string, body: unknown, signal: AbortSignal |
   try {
     let response: Response;
     try { response = await fetch(`${API_BASE}${path}`, { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(body), signal: controller.signal, cache: "no-store" }); }
-    catch { if (signal?.aborted) throw new Error("Consulta cancelada."); if (controller.signal.aborted) throw new Error("La consulta tardó demasiado. Revisa tu conexión e inténtalo de nuevo."); throw new Error("No se pudo conectar con el servicio. Verifica tu conexión e inténtalo de nuevo."); }
-    if (!response.ok) throw new Error(`El servicio respondió ${response.status}. Inténtalo de nuevo.`);
+    catch (error) { console.error("[Yanapiri][Recommendation] Error de red", error); if (signal?.aborted) throw new Error("Consulta cancelada."); if (controller.signal.aborted) throw new Error("La consulta tardó demasiado. Revisa tu conexión e inténtalo de nuevo."); throw new Error("No se pudo conectar con el servicio. Verifica tu conexión e inténtalo de nuevo."); }
+    console.info("[Yanapiri][Recommendation] Status HTTP", response.status);
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error("[Yanapiri][Recommendation] Body de error", errorBody);
+      throw new Error(`El servicio respondió ${response.status}. ${errorBody || "Inténtalo de nuevo."}`);
+    }
     let data: unknown;
-    try { data = await response.json(); } catch { throw new Error("El servicio respondió con JSON no válido."); }
-    if (!validate(data)) throw new Error("La respuesta recibida no coincide con el contrato esperado.");
+    try { data = await response.json(); } catch (error) { console.error("[Yanapiri][Recommendation] JSON inválido", error); throw new Error("El servicio respondió con JSON no válido."); }
+    if (!validate(data)) { console.error("[Yanapiri][Recommendation] Respuesta fuera de contrato", data); throw new Error("La respuesta recibida no coincide con el contrato esperado."); }
     return data;
   } finally { clearTimeout(timeout); signal?.removeEventListener("abort", abortFromCaller); }
 }

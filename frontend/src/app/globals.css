@@ -79,3 +79,36 @@ body { font-size: 16px; }
 @media(max-width:480px){.wizard-scenario-map-key{top:10px;right:9px;min-width:128px;gap:5px;padding:8px}.wizard-scenario-map-key span{font-size:7px}.wizard-scenario-map-key strong{font-size:6px}}
 @media(max-width:480px){.wizard-scenario-simulator{padding:10px}.wizard-scenario-options{gap:4px}.wizard-scenario-options button{gap:3px;padding:5px}.wizard-scenario-options button span{font-size:7px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+.wizard-backend-report {
+  margin: 1rem 0 1.25rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--line, #d9ddd6);
+  border-radius: 12px;
+  background: #fff;
+  line-height: 1.6;
+}
+
+.wizard-backend-report h1,
+.wizard-backend-report h2,
+.wizard-backend-report h3 {
+  margin: 1rem 0 .45rem;
+}
+
+.wizard-backend-report p { margin: .55rem 0; }
+.wizard-backend-report ul,
+.wizard-backend-report ol { padding-left: 1.4rem; }
+.wizard-backend-report table {
+  width: 100%;
+  margin: .8rem 0;
+  border-collapse: collapse;
+  font-size: .9rem;
+  overflow: hidden;
+}
+.wizard-backend-report th,
+.wizard-backend-report td {
+  padding: .55rem;
+  border: 1px solid var(--line, #d9ddd6);
+  text-align: left;
+  vertical-align: top;
+}
+.wizard-backend-report th { background: #f1f4ee; font-weight: 700; }

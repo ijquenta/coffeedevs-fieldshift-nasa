@@ -45,6 +45,7 @@ export interface DiagnosisResponse {
   variables: { humedadSuelo: string; lluvia: string; temperatura: string; vegetacion: string; relieve: string };
   vaciosDeInformacion: string[];
   metadatos: { generadoEn: string; esDatoDeEjemplo: boolean; zona: string; areaHa: number; centroide: Position };
+  backendReport?: string;
 }
 
 export interface AlertItem {

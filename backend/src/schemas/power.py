@@ -116,6 +116,8 @@ class PolygonRecommendationRequest(PolygonRequest):
     )
     crop_requirements: dict[str, Any] | None = None
     current_crop: str | None = None
+    requested_start: date | None = None
+    requested_end: date | None = None
 
     @field_validator("temporal")
     @classmethod

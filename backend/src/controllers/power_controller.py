@@ -1,3 +1,5 @@
+from datetime import date, timedelta
+
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from src.controllers.ine_controller import get_service as get_ine_service
@@ -61,6 +63,26 @@ async def polygon_recommendation(
     ine_service: INEService = Depends(get_ine_service),
     reverse_geocoding: ReverseGeocodingService = Depends(get_reverse_geocoding_service),
 ):
+    print("[Yanapiri][Recommendation] Request recibido", {
+        "temporal": req.temporal,
+        "start": req.start,
+        "end": req.end,
+        "municipality_id": req.municipality_id,
+        "municipality_name": req.municipality_name,
+        "plants": req.plants,
+    })
+    requested_start = req.requested_start or req.start
+    requested_end = req.requested_end or req.end
+    available_end = date.today() - timedelta(days=3)
+    if req.start and req.end and req.end > available_end:
+        req.start = available_end - timedelta(days=30)
+        req.end = available_end
+    req.requested_start = requested_start
+    req.requested_end = requested_end
+    print(
+        "[Yanapiri][Recommendation] Periodos separados",
+        {"planting_start": requested_start, "planting_end": requested_end, "nasa_start": req.start, "nasa_end": req.end},
+    )
     municipality = None
     department_name = None
     municipality_lookup = (
@@ -76,7 +98,16 @@ async def polygon_recommendation(
         try:
             location = await reverse_geocoding.reverse(latitude, longitude)
         except ReverseGeocodingError as exc:
+            print("[Yanapiri][Recommendation] Error reverse geocoding", str(exc))
             raise HTTPException(status_code=502, detail=str(exc)) from exc
+        print(
+            "[Yanapiri][Recommendation] Reverse geocoding completado",
+            {
+                "municipality_name": location.municipality_name,
+                "department_name": location.department_name,
+                "country_code": location.country_code,
+            },
+        )
         department_name = location.department_name
         req.municipality_name = location.municipality_name
         if (
@@ -96,4 +127,10 @@ async def polygon_recommendation(
     recommendation_service = PolygonRecommendationService(svc, chat_provider)
     if municipality is not None and department_name is None:
         department_name = "La Paz"
-    return await recommendation_service.recommend(req, municipality, department_name)
+    try:
+        response = await recommendation_service.recommend(req, municipality, department_name)
+        print("[Yanapiri][Recommendation] Recomendación completada")
+        return response
+    except Exception as exc:
+        print("[Yanapiri][Recommendation] Error generando recomendación", repr(exc))
+        raise

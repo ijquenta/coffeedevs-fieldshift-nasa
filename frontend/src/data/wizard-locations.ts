@@ -13,7 +13,10 @@ type MunicipalityRecord = {
   center: [number, number];
 };
 
-const municipalities = boliviaMunicipalityData.municipalities as MunicipalityRecord[];
+const municipalities = boliviaMunicipalityData.municipalities.map((municipality) => ({
+  ...municipality,
+  center: municipality.center as [number, number],
+})) as MunicipalityRecord[];
 const departments: DepartmentOption[] = Array.from(
   new Map(municipalities.map((municipality) => [municipality.departmentCode, municipality.department])).entries(),
   ([pcode, name]) => ({
