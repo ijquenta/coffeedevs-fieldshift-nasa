@@ -1,2 +1,4 @@
-fastapi[standard]
-pydantic-settings
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+google-genai>=3.0.0
+pydantic-settings>=2.5.0
