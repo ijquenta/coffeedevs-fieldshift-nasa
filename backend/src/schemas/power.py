@@ -151,9 +151,3 @@ class PolygonResponse(BaseModel):
     summary: dict[str, dict[str, float | int | None]]
     points: list[PointResponse] | None = None
     errors: list[dict[str, Any]] = Field(default_factory=list)
-
-
-class PolygonRecommendationResponse(BaseModel):
-    polygon: PolygonResponse
-    recommendation: str = Field(description="Evaluación agrícola detallada en Markdown")
-    audio_summary: str = Field(description="Resumen breve en español sencillo, listo para voz")
