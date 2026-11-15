@@ -35,6 +35,7 @@ class FakePowerService:
 class FakeAIProvider:
     def __init__(self) -> None:
         self.system_instruction = ""
+        self.response_json_schema: dict[str, Any] | None = None
         self.message: dict[str, Any] | None = None
         self.response_text = json.dumps(
             {
@@ -44,8 +45,13 @@ class FakeAIProvider:
             ensure_ascii=False,
         )
 
-    def create_session(self, system_instruction: str) -> object:
+    def create_session(
+        self,
+        system_instruction: str,
+        response_json_schema: dict[str, Any] | None = None,
+    ) -> object:
         self.system_instruction = system_instruction
+        self.response_json_schema = response_json_schema
         return object()
 
     def send_message(self, _chat_session: Any, message: str) -> str:
@@ -95,6 +101,7 @@ class TestPolygonRecommendationEndpoint(unittest.TestCase):
             response.json()["audio_summary"],
             "Conviene sembrar con cuidado y vigilar el agua.",
         )
+        self.assertIsNotNone(self.ai_provider.response_json_schema)
         self.assertEqual(response.json()["polygon"]["aggregated"]["T2M"]["20240101"], 12.5)
         self.assertEqual(self.power_service.request.start, date(2024, 1, 1))
         self.assertEqual(self.ai_provider.message["period"]["resolution"], "daily")
