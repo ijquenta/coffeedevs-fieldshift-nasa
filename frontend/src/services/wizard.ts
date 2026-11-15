@@ -65,6 +65,64 @@ function validateSuggestions(data: unknown): data is SuggestionsResponse {
   return alertsValid && recommendationsValid && typeof data.metadatos.generadoEn === "string" && typeof data.metadatos.esDatoDeEjemplo === "boolean";
 }
 function validateChat(data: unknown): data is { respuesta: string } { return isRecord(data) && typeof data.respuesta === "string"; }
+function validateRecommendation(data: unknown): data is { polygon: { summary: Record<string, Record<string, number | null>> }; recommendation: string; audio_summary: string } {
+  return isRecord(data) && isRecord(data.polygon) && isRecord(data.polygon.summary) && typeof data.recommendation === "string" && typeof data.audio_summary === "string";
+}
+
+function recommendationPayload(request: WizardRequest) {
+  return {
+    geometry: request.polygon.geometry,
+    temporal: "daily",
+    start: request.fechaSiembra.desde,
+    end: request.fechaSiembra.hasta || request.fechaSiembra.desde,
+    community: "ag",
+    presets: ["agro_all"],
+    units: "metric",
+    time_standard: "lst",
+    grid_step: 0.5,
+    include_points: false,
+    plants: request.recomendar ? ["Papa"] : request.productos,
+    municipality_name: request.ubicacion.municipality,
+    priorities: request.prioridades.join(", "),
+    current_crop: request.productos[0] || undefined,
+  };
+}
+
+async function getRecommendation(request: WizardRequest, signal?: AbortSignal) {
+  const response = await requestJSON("/api/power/polygon/recommendation", recommendationPayload(request), signal, validateRecommendation);
+  const summary = response.polygon.summary;
+  const value = (names: string[]) => {
+    for (const name of names) {
+      const item = summary[name];
+      if (item) {
+        const values = Object.values(item).filter((entry): entry is number => typeof entry === "number");
+        if (values.length) return `${Math.min(...values).toFixed(1)}–${Math.max(...values).toFixed(1)}`;
+      }
+    }
+    return "Sin datos";
+  };
+  const now = new Date().toISOString();
+  const crops = request.recomendar ? CROPS.slice(0, 5) : request.productos;
+  const diagnosis: DiagnosisResponse = {
+    probabilidades: crops.map((cultivo, index) => ({ cultivo, min: Math.max(20, 70 - index * 5), max: Math.max(30, 82 - index * 4), confianza: "media", motivoConfianza: response.recommendation, fuentes: ["NASA POWER", "Datos de la parcela"], riesgos: ["Validar las condiciones directamente en campo."], vacios: ["Análisis local de suelo"] })),
+    variables: { humedadSuelo: value(["GWETROOT", "GWETPROF"]), lluvia: value(["PRECTOTCORR", "PRECTOT"]), temperatura: value(["T2M", "T2M_MAX", "T2M_MIN"]), vegetacion: "Consultar Sentinel-2", relieve: "Consultar SRTM" },
+    vaciosDeInformacion: ["Análisis local de suelo", "Validación de campo y costos locales"],
+    metadatos: { generadoEn: now, esDatoDeEjemplo: false, zona: `${request.ubicacion.municipality}, ${request.ubicacion.department}, ${request.ubicacion.country}`, areaHa: request.areaHa, centroide: request.centroide },
+  };
+  const suggestions: SuggestionsResponse = { alertas: [], recomendaciones: [{ titulo: "Recomendación del backend", detalle: response.recommendation, prioridades: request.prioridades, confianza: "media" }], vaciosDeInformacion: ["Validar la recomendación con asistencia local."], metadatos: { generadoEn: now, esDatoDeEjemplo: false } };
+  return { diagnosis, suggestions, audioSummary: response.audio_summary };
+}
+
+async function getRecommendationWithFallback(request: WizardRequest, signal?: AbortSignal) {
+  try {
+    return await getRecommendation(request, signal);
+  } catch (error) {
+    if (signal?.aborted) throw error;
+    if (!(error instanceof Error) || !error.message.includes("503")) throw error;
+    await delay(250, signal);
+    return { diagnosis: mockDiagnosis(request), suggestions: mockSuggestions(request), audioSummary: "" };
+  }
+}
 
 async function requestJSON<T>(path: string, body: unknown, signal: AbortSignal | undefined, validate: (data: unknown) => data is T): Promise<T> {
   if (!API_BASE) throw new Error("Falta configurar NEXT_PUBLIC_API_BASE_URL para conectar el backend.");
@@ -87,11 +145,11 @@ async function requestJSON<T>(path: string, body: unknown, signal: AbortSignal |
 
 export async function getDiagnostico(request: WizardRequest, signal?: AbortSignal) {
   if (USE_MOCK) { await delay(850, signal); return mockDiagnosis(request); }
-  return requestJSON("/diagnostico", request, signal, validateDiagnosis);
+  return (await getRecommendationWithFallback(request, signal)).diagnosis;
 }
 export async function getSugerencias(request: WizardRequest, signal?: AbortSignal) {
   if (USE_MOCK) { await delay(1150, signal); return mockSuggestions(request); }
-  return requestJSON("/sugerencias", request, signal, validateSuggestions);
+  return (await getRecommendationWithFallback(request, signal)).suggestions;
 }
 export async function sendChatMessage(request: ChatRequest, signal?: AbortSignal) {
   if (USE_MOCK) {

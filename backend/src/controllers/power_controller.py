@@ -14,12 +14,20 @@ from src.schemas.power import (
 from src.services.ine_service import INEService
 from src.services.polygon_recommendation_service import PolygonRecommendationService
 from src.services.power_service import PowerService
+from src.services.reverse_geocoding_service import (
+    ReverseGeocodingError,
+    ReverseGeocodingService,
+)
 
 router = APIRouter(prefix="/api/power", tags=["NASA POWER"])
 
 
 def get_service(request: Request) -> PowerService:
     return request.app.state.power_service
+
+
+def get_reverse_geocoding_service() -> ReverseGeocodingService:
+    return ReverseGeocodingService()
 
 
 @router.get("/presets", summary="Grupos de parámetros disponibles")
@@ -51,20 +59,41 @@ async def polygon_recommendation(
     svc: PowerService = Depends(get_service),
     chat_provider: ChatProvider = Depends(get_ai_provider),
     ine_service: INEService = Depends(get_ine_service),
+    reverse_geocoding: ReverseGeocodingService = Depends(get_reverse_geocoding_service),
 ):
     municipality = None
+    department_name = None
     municipality_lookup = (
         str(req.municipality_id)
         if req.municipality_id is not None
         else req.municipality_name
     )
-    if municipality_lookup is not None:
+    if req.municipality_id is None:
+        coordinates = req.geometry.coordinates[0]
+        open_ring = coordinates[:-1] or coordinates
+        latitude = sum(point[1] for point in open_ring) / len(open_ring)
+        longitude = sum(point[0] for point in open_ring) / len(open_ring)
+        try:
+            location = await reverse_geocoding.reverse(latitude, longitude)
+        except ReverseGeocodingError as exc:
+            raise HTTPException(status_code=502, detail=str(exc)) from exc
+        department_name = location.department_name
+        req.municipality_name = location.municipality_name
+        if (
+            location.country_code == "bo"
+            and location.municipality_name
+            and location.department_name
+            and "paz" in location.department_name.casefold()
+        ):
+            municipality = ine_service.get_municipio(location.municipality_name)
+    elif municipality_lookup is not None:
         municipality = ine_service.get_municipio(str(municipality_lookup))
         if req.municipality_id is not None and municipality is None:
             raise HTTPException(
                 status_code=404,
                 detail=f"No se encontró el municipio '{req.municipality_id}' en La Paz",
             )
-
     recommendation_service = PolygonRecommendationService(svc, chat_provider)
-    return await recommendation_service.recommend(req, municipality)
+    if municipality is not None and department_name is None:
+        department_name = "La Paz"
+    return await recommendation_service.recommend(req, municipality, department_name)

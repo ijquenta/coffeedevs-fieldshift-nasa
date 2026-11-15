@@ -29,3 +29,4 @@ La app define su manifiesto en `src/app/manifest.ts` (servido como `/manifest.we
 Para probar la instalación, ejecuta `npm run build` y `npm run start` y abre el sitio desde `localhost` o un origen HTTPS. Los navegadores bloquean service workers en orígenes HTTP inseguros. El modo de desarrollo no registra el service worker para evitar que una caché vieja interfiera con los cambios.
 
 Los estilos móviles viven en `src/app/responsive.css`: los formularios se leen antes del mapa en pantallas estrechas, el mapa conserva una altura útil y las tarjetas ya no quedan atrapadas en paneles con scroll interno.
+
