@@ -73,18 +73,22 @@ function WizardContent() {
   };
 
   const loadAnalysis = async () => {
+    console.info("[Yanapiri][Wizard] Iniciando análisis del paso 3");
     if (parcelError) { setPageError(parcelError); return; }
      if (productError) { setShowPlanValidation(true); return; }
     if (dateError) { setPageError("Revisa el periodo de siembra: la fecha final debe ser igual o posterior a la inicial."); return; }
     const request = createRequest(); if (!request) { setPageError("Selecciona una ubicación y delimita tu parcela antes de continuar."); return; }
+    console.info("[Yanapiri][Wizard] Solicitud preparada", request);
     abortRef.current?.abort(); const controller = new AbortController(); abortRef.current = controller;
     setPageError(""); setLoading(true); setDiagnosis(null); setSuggestions(null); setResultTab("diagnostico"); setStep(3); setMapMode("view");
     try {
-      const [diagnostic, advice] = await Promise.all([getDiagnostico(request, controller.signal), getSugerencias(request, controller.signal)]);
+      const diagnostic = await getDiagnostico(request, controller.signal);
+      const advice = await getSugerencias(request, controller.signal);
       if (controller.signal.aborted) return;
       setDiagnosis(diagnostic); setSuggestions(advice);
     } catch (reason) {
       if (controller.signal.aborted) return;
+      console.error("[Yanapiri][Wizard] Error cargando análisis", reason);
       setPageError(reason instanceof Error ? reason.message : "No se pudo cargar el análisis."); setStep(2);
     } finally { if (abortRef.current === controller) setLoading(false); }
   };

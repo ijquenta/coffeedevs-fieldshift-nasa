@@ -91,6 +91,10 @@ class PolygonRecommendationService:
                 "end": request.end.isoformat() if request.end else None,
                 "resolution": request.temporal.value,
             },
+            "requested_period": {
+                "start": request.requested_start.isoformat() if getattr(request, "requested_start", None) else None,
+                "end": request.requested_end.isoformat() if getattr(request, "requested_end", None) else None,
+            },
             "nasa_power": polygon.model_dump(mode="json"),
             "plants": request.plants,
             "polygon_request": request.model_dump(mode="json"),
