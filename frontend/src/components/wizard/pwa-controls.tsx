@@ -23,23 +23,25 @@ const isInstalledOnServer = () => false;
 
 export default function PwaControls() {
   const [promptEvent, setPromptEvent] = useState<InstallPromptEvent | null>(null);
+  const [canInstall, setCanInstall] = useState(false);
   const installed = useSyncExternalStore(subscribeInstallation, isInstalledSnapshot, isInstalledOnServer);
   const [helpOpen, setHelpOpen] = useState(false);
   const [isAppleMobile, setIsAppleMobile] = useState(false);
 
   useEffect(() => {
-    if (process.env.NODE_ENV !== "production") return;
     if ("serviceWorker" in navigator) {
-      void navigator.serviceWorker.register("/sw.js", { scope: "/", updateViaCache: "none" }).catch((error: unknown) => {
+      void navigator.serviceWorker.ready.catch((error: unknown) => {
         console.error("No se pudo activar el modo sin conexión de Yapana Agro.", error);
       });
+      void navigator.serviceWorker.register("/sw.js", { scope: "/", updateViaCache: "none" });
     }
 
     const onBeforeInstall = (event: Event) => {
       event.preventDefault();
       setPromptEvent(event as InstallPromptEvent);
+      setCanInstall(true);
     };
-    const onInstalled = () => { setPromptEvent(null); setHelpOpen(false); };
+    const onInstalled = () => { setPromptEvent(null); setCanInstall(false); setHelpOpen(false); };
     window.addEventListener("beforeinstallprompt", onBeforeInstall);
     window.addEventListener("appinstalled", onInstalled);
     return () => {
@@ -48,7 +50,7 @@ export default function PwaControls() {
     };
   }, []);
 
-  if (process.env.NODE_ENV !== "production" || installed) return null;
+  if (installed) return null;
   const install = async () => {
     if (!promptEvent) {
       setIsAppleMobile(/iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1));
@@ -56,19 +58,20 @@ export default function PwaControls() {
       return;
     }
     await promptEvent.prompt();
-    const choice = await promptEvent.userChoice;
-    if (choice.outcome !== "dismissed") setPromptEvent(null);
+    await promptEvent.userChoice;
+    setPromptEvent(null);
+    setCanInstall(false);
   };
 
   return <>
-    <button className="wizard-install-button" onClick={() => void install()} aria-label="Instalar Yapana Agro" title="Instalar Yapana Agro"><Download size={14} /><span>Instalar app</span></button>
+    <button className="wizard-install-button" onClick={() => void install()} aria-label="Instalar Yapana Agro" title={canInstall ? "Instalar Yapana Agro" : "Consulta las instrucciones de instalación"}><Download size={14} /><span>{canInstall ? "Instalar app" : "Cómo instalar"}</span></button>
     {helpOpen && <div className="wizard-install-backdrop" onClick={() => setHelpOpen(false)}>
       <section className="wizard-install-dialog" role="dialog" aria-modal="true" aria-labelledby="wizard-install-title" onClick={(event) => event.stopPropagation()}>
         <button className="wizard-install-close" aria-label="Cerrar" onClick={() => setHelpOpen(false)}><X size={18} /></button>
         <span className="wizard-install-mark"><Check size={21} /></span>
         <p className="wizard-card-kicker">YAPANA AGRO · ACCESO RÁPIDO</p>
         <h2 id="wizard-install-title">Añade la app a tu dispositivo</h2>
-        <p className="wizard-install-copy">{isAppleMobile ? "En Safari, toca Compartir y elige “Añadir a pantalla de inicio”." : "Abre el menú del navegador (⋮ o ⋯) y elige “Instalar Yapana Agro” o “Añadir a pantalla principal”."}</p>
+        <p className="wizard-install-copy">{isAppleMobile ? "En Safari, toca Compartir y elige “Añadir a pantalla de inicio”." : "Si no aparece el diálogo automático, abre el menú del navegador (⋮) y elige “Instalar Yapana Agro” o “Crear acceso directo”."}</p>
         <div className="wizard-install-hint"><Share2 size={16} /><span>La instalación crea un acceso directo y abre Yapana Agro en su propia ventana.</span></div>
         <button className="wizard-primary-button" onClick={() => setHelpOpen(false)}>Entendido <Check size={16} /></button>
       </section>

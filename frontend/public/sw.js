@@ -5,7 +5,16 @@ const SHELL_URLS = ["/offline.html", "/icons/icon-192.png", "/icons/icon-512.png
 const STATIC_PREFIXES = ["/_next/static/", "/cesium/"];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(SHELL_CACHE).then((cache) => cache.addAll(SHELL_URLS)));
+  event.waitUntil(caches.open(SHELL_CACHE).then(async (cache) => {
+    await Promise.all(SHELL_URLS.map(async (url) => {
+      try {
+        const response = await fetch(url);
+        if (response.ok) await cache.put(url, response);
+      } catch {
+        // A missing optional icon must not prevent the service worker from installing.
+      }
+    }));
+  }));
   self.skipWaiting();
 });
 
