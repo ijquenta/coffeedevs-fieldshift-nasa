@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { AlertCircle, ArrowRight, Check, CheckCircle2, ChevronDown, CircleHelp, Info, LoaderCircle, MapPin, Minus, Plus, RotateCcw, Ruler, Satellite, Sparkles, X } from "lucide-react";
 import WizardHeader from "./wizard-header";
 import LocationCard from "./location-card";
@@ -13,6 +14,8 @@ import { closePolygon, defaultParcel, MAX_PARCEL_HA, parcelGeometry, validatePar
 import { plantingWindow } from "../../lib/wizard-dates";
 import { getDiagnostico, getSugerencias } from "../../services/wizard";
 import type { FarmLocation, Position, WizardRequest } from "../../types/wizard";
+
+const ClientWizardMap = dynamic(() => import("./wizard-map"), { ssr: false });
 
 function polygonPoints(polygon: ReturnType<typeof closePolygon> | null) {
   if (!polygon) return [];
@@ -85,7 +88,7 @@ function WizardContent() {
       const diagnostic = await getDiagnostico(request, controller.signal);
       const advice = await getSugerencias(request, controller.signal);
       if (controller.signal.aborted) return;
-      setDiagnosis(diagnostic); setSuggestions(advice);
+      setDiagnosis(diagnostic); setSuggestions(advice); setPageError("");
     } catch (reason) {
       if (controller.signal.aborted) return;
       console.error("[Yanapiri][Wizard] Error cargando análisis", reason);
@@ -106,11 +109,11 @@ function WizardContent() {
           <div className="wizard-map-card">
              <div className="wizard-map-toolbar wizard-map-toolbar-empty"><div className="wizard-map-heading" />
                <div className="wizard-map-tools">
-                {(step === 1 || step === 2) && <><button onClick={() => editMap("draw")} className={mapMode === "draw" ? "active" : ""} disabled={step === 1 && !location} title="Dibujar un nuevo límite"><span>＋</span><small>Dibujar</small></button><button onClick={() => editMap("edit")} className={mapMode === "edit" ? "active" : ""} disabled={points.length < 3} title="Editar los vértices"><Ruler size={14} /><small>Editar</small></button>{mapMode !== "view" && <button onClick={() => setMapMode("view")} title="Terminar edición"><Check size={14} /><small>Listo</small></button>}{points.length > 0 && <button onClick={() => { setPolygon(null); setMapMode("draw"); }} title="Borrar el límite"><RotateCcw size={14} /><small>Borrar</small></button>}</>}
+                 {(step === 1 || step === 2) && <><button onClick={() => editMap("draw")} className={mapMode === "draw" ? "active" : ""} disabled={Boolean(step === 1 && !location)} title="Dibujar un nuevo límite"><span>＋</span><small>Dibujar</small></button><button onClick={() => editMap("edit")} className={mapMode === "edit" ? "active" : ""} disabled={Boolean(points.length < 3)} title="Editar los vértices"><Ruler size={14} /><small>Editar</small></button>{mapMode !== "view" && <button onClick={() => setMapMode("view")} title="Terminar edición"><Check size={14} /><small>Listo</small></button>}{points.length > 0 && <button onClick={() => { setPolygon(null); setMapMode("draw"); }} title="Borrar el límite"><RotateCcw size={14} /><small>Borrar</small></button>}</>}
               </div>
             </div>
             <div className="wizard-map-stage">
-               <WizardMap points={points} mode={mapMode} cameraTarget={cameraTarget} spin={!location} scenario={step === 3 ? weatherScenario : "none"} severity={scenarioSeverity} onCameraMove={setCameraMoving} onChange={(next) => { setPolygon(next.length ? closePolygon(next) : null); setPageError(""); }} />
+                <ClientWizardMap points={points} mode={mapMode} cameraTarget={cameraTarget} spin={!location} scenario={step === 3 ? weatherScenario : "none"} severity={scenarioSeverity} onCameraMove={setCameraMoving} onChange={(next) => { setPolygon(next.length ? closePolygon(next) : null); setPageError(""); }} />
               <div className="wizard-map-top-hud"><span><i /> GLOBO DE LA TIERRA · CESIUM</span></div>
               {points.length >= 3 && <div className="wizard-map-measure"><span><small>SUPERFICIE DEL TERRENO</small><strong>{geometry.areaHa.toLocaleString("es-BO", { maximumFractionDigits: 2 })} <em>ha</em></strong><i>{geometry.areaHa < 100 ? `${Math.round(geometry.areaHa * 10_000).toLocaleString("es-BO")} m²` : `${(geometry.areaHa / 100).toFixed(2)} km²`}</i></span><span className="wizard-measure-divider" /><span><small>CENTRO APROXIMADO</small><strong className="wizard-coordinate">{Math.abs(geometry.center[1]).toFixed(4)}° S <i>·</i> {Math.abs(geometry.center[0]).toFixed(4)}° O</strong><i>{points.length} vértices</i></span></div>}
               {location && mapMode === "draw" && <div className="wizard-map-instruction"><Sparkles size={13} /> Haz clic en el mapa para marcar cada esquina del campo. Pulsa <kbd>Listo</kbd> al terminar.</div>}

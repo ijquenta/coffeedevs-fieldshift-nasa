@@ -87,7 +87,8 @@ body { font-size: 16px; }
   padding: 1rem 1.1rem;
   border: 1px solid var(--line, #d9ddd6);
   border-radius: 12px;
-  background: #fff;
+  background: var(--panel-raised);
+  color: var(--text);
   line-height: 1.6;
 }
 
@@ -114,4 +115,4 @@ body { font-size: 16px; }
   text-align: left;
   vertical-align: top;
 }
-.wizard-backend-report th { background: #f1f4ee; font-weight: 700; }
+.wizard-backend-report th { background: rgba(201,239,129,.12); color: var(--text); font-weight: 700; }

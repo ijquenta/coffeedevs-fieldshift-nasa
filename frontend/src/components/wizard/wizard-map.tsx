@@ -43,6 +43,9 @@ export default function WizardMap({ points, mode, cameraTarget, spin, scenario, 
   const [refreshKey, setRefreshKey] = useState(0);
   const [impactNote, setImpactNote] = useState<string | null>(null);
   const rainEnabledRef = useRef(rainEnabled);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => { rainEnabledRef.current = rainEnabled; }, [rainEnabled]);
 
@@ -244,7 +247,8 @@ export default function WizardMap({ points, mode, cameraTarget, spin, scenario, 
   const WeatherIcon = selectedWeatherLayer.icon;
 
   return <>
-    <div ref={host} className="wizard-cesium" aria-label="Globo 3D interactivo para ubicar y editar la parcela" />
+     <div ref={host} className="wizard-cesium" aria-label="Globo 3D interactivo para ubicar y editar la parcela" />
+     {!mounted ? null : <>
     {impactNote && <div className="wizard-impact-note" role="status"><strong>{impactNote}</strong><span>Zona ilustrativa: inspecciona el suelo y contrasta con condiciones observadas en el lote.</span><button type="button" onClick={() => setImpactNote(null)} aria-label="Cerrar nota">×</button></div>}
     {scenario !== "none" && <div className={`wizard-scenario-map-key scenario-key-${scenario}`} aria-live="polite">
       <strong>ZONAS DE REVISIÓN · DEMO</strong>
@@ -271,6 +275,7 @@ export default function WizardMap({ points, mode, cameraTarget, spin, scenario, 
         <span className={`wizard-weather-gradient ${weatherLayer}`} />
         <div className="wizard-rain-scale"><span>{weatherLayer === "rain" ? "0.1 mm/h" : "Bajo"}</span><strong>{weatherLayer === "rain" ? "~10 km · 30 min" : `NASA GIBS · ${selectedWeatherLayer.cadence}`}</strong><span>{weatherLayer === "rain" ? "50+ mm/h" : "Alto"}</span></div>
       </div>}
-    </div>
-  </>;
+     </div>
+     </>}
+   </>;
 }

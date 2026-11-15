@@ -41,7 +41,7 @@ export default function LocationCard({ selected, canContinue, onChoose, onContin
   };
 
   return <section className="wizard-card-body">
-    <div className="wizard-card-actions">{onBack && <button className="wizard-card-back-button" onClick={onBack} aria-label="Atrás"><ArrowLeft size={16} /> Atrás</button>}<button className="wizard-primary-button wizard-card-action-primary" disabled={!canContinue} onClick={onContinue}>Confirmar parcela <ArrowRight size={16} /></button></div>
+    <div className="wizard-card-actions">{onBack && <button className="wizard-card-back-button" onClick={onBack} aria-label="Atrás"><ArrowLeft size={16} /> Atrás</button>}<button className="wizard-primary-button wizard-card-action-primary" disabled={Boolean(!canContinue)} onClick={onContinue}>Confirmar parcela <ArrowRight size={16} /></button></div>
     <h1>¿Dónde está tu campo?</h1>
     <p className="wizard-card-intro">Encuentra el terreno para empezar a leer su contexto desde el espacio.</p>
     <div className="wizard-location-search"><Search size={17} aria-hidden="true" /><input aria-label="Buscar calle, municipio o país" placeholder="Calle, municipio o país" value={query} onChange={(event) => { const value = event.target.value; setQuery(value); setResults([]); setError(""); setSearching(value.trim().length >= 3); }} onKeyDown={(event) => { if (event.key === "Escape") setResults([]); }} />{searching && <LoaderCircle className="animate-spin" size={16} />}</div>

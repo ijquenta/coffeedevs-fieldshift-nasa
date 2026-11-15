@@ -111,21 +111,18 @@ async function getRecommendation(request: WizardRequest, signal?: AbortSignal) {
   const response = await requestJSON("/api/power/polygon/recommendation", payload, signal, validateRecommendation);
   console.info("[Yanapiri][Recommendation] Respuesta válida", { summaryKeys: Object.keys(response.polygon.summary), recommendationLength: response.recommendation.length });
   const summary = response.polygon.summary;
-  const value = (names: string[]) => {
-    for (const name of names) {
-      const item = summary[name];
-      if (item) {
-        const values = Object.values(item).filter((entry): entry is number => typeof entry === "number");
-        if (values.length) return `${Math.min(...values).toFixed(1)}–${Math.max(...values).toFixed(1)}`;
-      }
-    }
-    return "Sin datos";
+  const range = (name: string, unit = "") => {
+    const item = summary[name];
+    if (!item) return "Sin datos";
+    const values = Object.values(item).filter((entry): entry is number => typeof entry === "number" && Number.isFinite(entry));
+    if (!values.length) return "Sin datos";
+    return `${Math.min(...values).toFixed(1)}–${Math.max(...values).toFixed(1)}${unit}`;
   };
   const now = new Date().toISOString();
   const crops = request.recomendar ? CROPS.slice(0, 5) : request.productos;
   const diagnosis: DiagnosisResponse = {
     probabilidades: crops.map((cultivo, index) => ({ cultivo, min: Math.max(20, 70 - index * 5), max: Math.max(30, 82 - index * 4), confianza: "media", motivoConfianza: "Evaluación basada en señales climáticas regionales y validación de campo pendiente.", fuentes: ["NASA POWER", "Datos de la parcela"], riesgos: ["Validar las condiciones directamente en campo."], vacios: ["Análisis local de suelo"] })),
-    variables: { humedadSuelo: value(["GWETROOT", "GWETPROF"]), lluvia: value(["PRECTOTCORR", "PRECTOT"]), temperatura: value(["T2M", "T2M_MAX", "T2M_MIN"]), vegetacion: "Consultar Sentinel-2", relieve: "Consultar SRTM" },
+    variables: { humedadSuelo: range("GWETROOT"), lluvia: range("PRECTOTCORR", " mm/día"), temperatura: range("T2M", " °C"), vegetacion: "Consultar Sentinel-2", relieve: "Consultar SRTM" },
     vaciosDeInformacion: ["Análisis local de suelo", "Validación de campo y costos locales"],
     metadatos: { generadoEn: now, esDatoDeEjemplo: false, zona: `${request.ubicacion.municipality}, ${request.ubicacion.department}, ${request.ubicacion.country}`, areaHa: request.areaHa, centroide: request.centroide },
     backendReport: response.recommendation,
@@ -140,8 +137,10 @@ async function getRecommendationWithFallback(request: WizardRequest, signal?: Ab
   } catch (error) {
     if (signal?.aborted) throw error;
     console.error("[Yanapiri][Recommendation] Falló la solicitud", error);
-    if (!(error instanceof Error) || !["502", "503", "504"].some((status) => error.message.includes(status))) throw error;
-    console.warn("[Yanapiri][Recommendation] Usando datos de respaldo");
+    const message = error instanceof Error ? error.message : String(error);
+    const temporaryFailure = ["502", "503", "504", "AIProviderError", "UNAVAILABLE", "high demand", "Error de comunicación con Gemini"].some((marker) => message.includes(marker));
+    if (!temporaryFailure) throw error;
+    console.warn("[Yanapiri][Recommendation] Backend no disponible temporalmente; usando datos de respaldo");
     await delay(250, signal);
     return { diagnosis: mockDiagnosis(request), suggestions: mockSuggestions(request), audioSummary: "" };
   }
