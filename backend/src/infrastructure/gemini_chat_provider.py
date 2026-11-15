@@ -20,11 +20,19 @@ class GeminiProvider:
         self._model = model
         self._temperature = temperature
 
-    def create_session(self, system_instruction: str) -> Any:
+    def create_session(
+        self,
+        system_instruction: str,
+        response_json_schema: dict[str, Any] | None = None,
+    ) -> Any:
         try:
             config = types.GenerateContentConfig(
                 system_instruction=system_instruction,
                 temperature=self._temperature,
+                response_mime_type="application/json"
+                if response_json_schema is not None
+                else None,
+                response_json_schema=response_json_schema,
             )
             return self._client.chats.create(
                 model=self._model,
